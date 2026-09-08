@@ -1,0 +1,1743 @@
+{
+  "source": "https://github.com/router-for-me/CLIProxyAPI",
+  "commit": "d198db54d4c4886c99b21488d54fc576933019a3",
+  "path": "internal/registry/models/models.json",
+  "nonTextSource": "internal/registry/model_definitions.go",
+  "nonTextModelIds": [
+    "gpt-image-1.5",
+    "gpt-image-2",
+    "grok-imagine-image",
+    "grok-imagine-image-quality",
+    "grok-imagine-image-2.0",
+    "grok-imagine-video",
+    "grok-imagine-video-1.5",
+    "grok-imagine-video-1.5-preview"
+  ],
+  "models": {
+    "claude-haiku-4-5-20251001": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true
+        }
+      }
+    ],
+    "claude-sonnet-4-5-20250929": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true
+        }
+      }
+    ],
+    "claude-sonnet-4-6": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ]
+        }
+      },
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 64000,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "claude-opus-4-6": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-opus-4-7": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-opus-4-8": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-opus-5": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-sonnet-5": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-fable-5": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-fable-5-1": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-opus-4-5-20251101": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000,
+          "zero_allowed": true
+        }
+      }
+    ],
+    "claude-opus-4-1-20250805": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000
+        }
+      }
+    ],
+    "claude-opus-4-20250514": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000
+        }
+      }
+    ],
+    "claude-sonnet-4-20250514": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000
+        }
+      }
+    ],
+    "claude-3-7-sonnet-20250219": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 128000
+        }
+      }
+    ],
+    "claude-3-5-haiku-20241022": [
+      {
+        "type": "claude",
+        "owner": "anthropic",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "thinking": null
+      }
+    ],
+    "gemini-2.5-pro": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-2.5-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "max": 24576,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-2.5-flash-lite": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "max": 24576,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-3-pro-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-3.1-pro-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-3.1-flash-image-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3-flash-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-3.1-flash-lite-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3-pro-image-preview": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.5-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.5-flash-lite": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.6-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.7-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.8-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-2.5-flash-image": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "max": 24576,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      },
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 8192,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": null
+      }
+    ],
+    "gemini-3-pro": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3-flash": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.1-pro": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.1-flash-image": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.1-flash-lite": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65535,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "zero_allowed": true,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3-pro-image": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "imagen-4.0-generate-001": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "imagen-4.0-ultra-generate-001": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "imagen-3.0-generate-002": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "imagen-3.0-fast-generate-001": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "imagen-4.0-fast-generate-001": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "gemini-pro-latest": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 128,
+          "max": 32768,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-flash-latest": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "max": 24576,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-flash-lite-latest": [
+      {
+        "type": "gemini",
+        "owner": "google",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 512,
+          "max": 24576,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gpt-5.5": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        }
+      }
+    ],
+    "gpt-5.6-terra": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 372000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      },
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 921000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "gpt-5.6-luna": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 372000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      },
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 921000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "codex-auto-review": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        }
+      }
+    ],
+    "gpt-6-astra": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "gpt-5.6-sol": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 372000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      },
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 921000,
+        "maxTokens": 128000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    ],
+    "gpt-5.3-codex-spark": [
+      {
+        "type": "openai",
+        "owner": "openai",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "input": [
+          "text"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        }
+      }
+    ],
+    "kimi-k2": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "kimi-k2-thinking": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "input": [
+          "text"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "kimi-k2.5": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "input": [
+          "text",
+          "image",
+          "video"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "kimi-k2.6": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "video"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "kimi-k2.7-code": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "video"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "kimi-k2.7-code-highspeed": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "video"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "high"
+          ]
+        }
+      }
+    ],
+    "kimi-k3": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "video"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "high",
+            "max"
+          ]
+        }
+      }
+    ],
+    "kimi-k3-256k": [
+      {
+        "type": "kimi",
+        "owner": "moonshot",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "high",
+            "max"
+          ]
+        }
+      }
+    ],
+    "claude-opus-4-6-thinking": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "min": 1024,
+          "max": 64000,
+          "zero_allowed": true,
+          "dynamic_allowed": true
+        }
+      }
+    ],
+    "gemini-3.6-flash-high": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.7-flash-high": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.8-flash-high": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-pro-agent": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65535,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gemini-3.1-pro-low": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 1048576,
+        "maxTokens": 65535,
+        "input": [
+          "text",
+          "image",
+          "audio",
+          "video"
+        ],
+        "thinking": {
+          "min": 1,
+          "max": 65535,
+          "dynamic_allowed": true,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "gpt-oss-120b-medium": [
+      {
+        "type": "antigravity",
+        "owner": "antigravity",
+        "contextWindow": 114000,
+        "maxTokens": 32768,
+        "input": [
+          "text"
+        ],
+        "thinking": null
+      }
+    ],
+    "grok-4.6": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 500000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        }
+      }
+    ],
+    "grok-build-0.1": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": null
+      }
+    ],
+    "grok-4.5": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 500000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": false,
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "grok-4.3": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "zero_allowed": true,
+          "levels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "grok-4.20-0309-reasoning": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 2000000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": null
+      }
+    ],
+    "grok-4.20-0309-non-reasoning": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 2000000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": null
+      }
+    ],
+    "grok-4.20-multi-agent-0309": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 2000000,
+        "maxTokens": 65536,
+        "input": [
+          "text",
+          "image"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "grok-3-mini": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "input": [
+          "text"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "grok-3-mini-fast": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "input": [
+          "text"
+        ],
+        "thinking": {
+          "levels": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    ],
+    "grok-composer-2.5-fast": [
+      {
+        "type": "xai",
+        "owner": "xai",
+        "contextWindow": 200000,
+        "maxTokens": 32768,
+        "thinking": null
+      }
+    ]
+  }
+}

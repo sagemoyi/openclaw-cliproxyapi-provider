@@ -1,0 +1,17 @@
+{
+  "id": "cliproxyapi",
+  "name": "CLIProxyAPI",
+  "description": "Discover CPA models and capabilities using the standard provider runtime",
+  "providers": ["cliproxyapi"],
+  "setup": {"providers": [{"id": "cliproxyapi", "envVars": ["CPA_API_KEY"]}]},
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "refreshSeconds": {"type": "integer", "minimum": 10, "maximum": 86400, "default": 60},
+      "staleSeconds": {"type": "integer", "minimum": 0, "maximum": 86400, "default": 300},
+      "timeoutMs": {"type": "integer", "minimum": 100, "maximum": 60000, "default": 10000},
+      "useBundledMetadata": {"type": "boolean", "default": true}
+    }
+  }
+}
