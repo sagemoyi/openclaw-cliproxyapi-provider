@@ -25,7 +25,8 @@ export function normalizeBaseUrl(value) {
 }
 
 export function readCatalogRows(body) {
-  if (!record(body)) throw new Error("CPA catalog must be a JSON object");
+  if (Array.isArray(body)) return body;
+  if (!record(body)) throw new Error("CPA catalog must be a JSON object or array");
   if (Array.isArray(body.models)) return body.models;
   if (Array.isArray(body.data)) return body.data;
   throw new Error("CPA catalog must contain models[] or data[]");
@@ -54,12 +55,13 @@ export function projectModel(basic, rich, { useBundledMetadata = true } = {}) {
   if (!id) throw new Error("CPA returned an invalid model ID");
   const native = knownModel(id, basic.owned_by, useBundledMetadata);
   // CPA hides image/video models in the Codex catalog. Do not expose them as chat models.
-  if (rich?.visibility === "hide" || native?.type === "openai-image" ||
+  if (String(rich?.visibility ?? "").trim().toLowerCase() === "hide" || native?.type === "openai-image" ||
       (useBundledMetadata && SNAPSHOT.nonTextModelIds?.includes(id))) return null;
   const warnings = [];
   let source = rich ? "cpa-live" : native ? "cpa-bundled" : "conservative-default";
   let efforts = Array.isArray(rich?.supported_reasoning_levels)
-    ? [...new Set(rich.supported_reasoning_levels.map((x) => x?.effort).filter((x) => EFFORTS.includes(x)))]
+    ? [...new Set(rich.supported_reasoning_levels.map((x) => typeof x === "string" ? x : x?.effort)
+      .filter((x) => typeof x === "string").map((x) => x.trim().toLowerCase()).filter((x) => EFFORTS.includes(x)))]
     : undefined;
   if (native?.thinking === null && (!efforts || JSON.stringify(efforts) === JSON.stringify(TEMPLATE_EFFORTS))) {
     efforts = [];
@@ -118,7 +120,7 @@ export function projectModel(basic, rich, { useBundledMetadata = true } = {}) {
 export function projectCatalog(basicRows, richRows, options) {
   const richById = new Map();
   for (const row of richRows) {
-    const id = idOf(row, "slug");
+    const id = idOf(row, "slug") || idOf(row, "id");
     if (!id) throw new Error("CPA rich catalog contains an invalid row");
     if (richById.has(id)) throw new Error("CPA rich catalog contains duplicate IDs");
     richById.set(id, row);
@@ -147,7 +149,8 @@ export class CatalogClient {
   }
   peek(baseUrl, apiKey) {
     const entry = this.entries.get(this.key(baseUrl, apiKey));
-    return entry?.value && this.now() - entry.at <= this.ttlMs + this.staleMs ? entry.value : undefined;
+    return entry?.value && this.now() - entry.at <= this.ttlMs + this.staleMs
+      ? { ...entry.value, stale: this.now() - entry.at >= this.ttlMs } : undefined;
   }
   async get({ baseUrl, apiKey, signal, force = false }) {
     baseUrl = normalizeBaseUrl(baseUrl);
@@ -170,13 +173,18 @@ export class CatalogClient {
     entry.pending = (async () => {
       try {
         const results = await Promise.allSettled([fetch("/models"), fetch("/models?client_version=")]);
+        // Authentication failure on either endpoint must invalidate stale metadata.
+        const authError = results.find((r) => r.status === "rejected" && [401, 403].includes(r.reason?.status));
+        if (authError) throw authError.reason;
         if (results[0].status === "rejected") throw results[0].reason;
         const basic = results[0].value;
         let rich = [];
         if (results[1].status === "fulfilled") {
           const rows = results[1].value;
           // Older CPA servers ignore the query parameter and return the ordinary list.
-          if (rows.length && rows.every((r) => idOf(r, "id") && !r.slug)) {
+          if (rows.length && rows.every((r) => idOf(r, "id") && !r.slug &&
+            !["supported_reasoning_levels", "default_reasoning_level", "context_window", "max_context_window",
+              "max_tokens", "input_modalities", "visibility", "display_name", "name"].some((key) => Object.hasOwn(r, key)))) {
             this.warn("CPA has no rich catalog; using exact bundled metadata and conservative defaults");
           } else rich = rows;
         } else if ([404, 405].includes(results[1].reason?.status)) {

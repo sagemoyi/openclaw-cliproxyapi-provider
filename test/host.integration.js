@@ -12,15 +12,16 @@ import { streamSimple } from "openclaw/plugin-sdk/llm";
 import { createCpaProvider } from "../src/provider.js";
 const exec = promisify(execFile);
 
-test("real SDK fetch + streaming transport honor high/max/ultra/off and tool schemas", async (t) => {
+test("real SDK fetch + streaming transport honor string efforts, adaptive, non-reasoning and tool schemas", async (t) => {
   const requests = [];
+  let efforts = ["none", "low", "high", "max", "ultra", "auto"];
   const server = createServer(async (req, res) => {
     assert.equal(req.headers.authorization, "Bearer test-key");
     res.setHeader("Content-Type", "application/json");
     if (req.url.startsWith("/v1/models")) {
       const rich = req.url.includes("?");
       res.end(JSON.stringify(rich ? { models: [
-        { slug: "proxy-test", context_window: 64000, supported_reasoning_levels: ["none", "low", "high", "max", "ultra"].map((effort) => ({ effort })) },
+        { id: "proxy-test", context_window: 64000, max_tokens: 2048, supported_reasoning_levels: efforts },
       ] } : { data: [{ id: "proxy-test" }] })); return;
     }
     let body = ""; for await (const chunk of req) body += chunk;
@@ -38,7 +39,8 @@ test("real SDK fetch + streaming transport honor high/max/ultra/off and tool sch
   const ctx = { config, modelId: "proxy-test" };
   await cpa.provider.catalog.run(ctx);
   const model = cpa.provider.resolveDynamicModel(ctx);
-  for (const [thinkingLevel, exact, expected] of [["high", undefined, "high"], ["max", undefined, "max"], ["max", "ultra", "ultra"], ["off", undefined, "none"]]) {
+  assert.equal(model.maxTokens, 2048);
+  for (const [thinkingLevel, exact, expected] of [["high", undefined, "high"], ["max", undefined, "max"], ["max", "ultra", "ultra"], ["off", undefined, "none"], ["adaptive", undefined, "auto"]]) {
     const wrapped = cpa.provider.wrapStreamFn({ ...ctx, thinkingLevel, extraParams: { cpaReasoningEffort: exact }, streamFn: streamSimple });
     const stream = await wrapped(model, { messages: [{ role: "user", content: "Say OK", timestamp: Date.now() }],
       tools: [{ name: "lookup", description: "Lookup a value", parameters: { type: "object", properties: { key: { type: "string" } }, required: ["key"] } }] },
@@ -48,6 +50,14 @@ test("real SDK fetch + streaming transport honor high/max/ultra/off and tool sch
     assert.equal(requests.at(-1).reasoning_effort, expected);
     assert.equal(requests.at(-1).tools[0].function.name, "lookup");
   }
+  efforts = [];
+  await cpa.discover(ctx, { force: true });
+  const nonReasoning = cpa.provider.wrapStreamFn({ ...ctx, thinkingLevel: "high", streamFn: streamSimple });
+  const stream = await nonReasoning(model, { messages: [{ role: "user", content: "Say OK", timestamp: Date.now() }] },
+    { apiKey: "test-key", maxTokens: 32 });
+  const result = await stream.result();
+  assert.equal(result.stopReason, "stop", result.errorMessage);
+  assert.equal(Object.hasOwn(requests.at(-1), "reasoning_effort"), false);
 });
 
 test("isolated OpenClaw CLI installs and loads the provider and fetches live catalogs", { timeout: 120000 }, async (t) => {

@@ -1,56 +1,157 @@
-# 测试记录
+# 测试与开发指南
 
-日期：2026-09-08。机器：Linux arm64 / Node 24.16.0。宿主：OpenClaw 2026.7.1-2；端点：本机 CPA v7.2.149。
+[English](DEVELOPMENT.md) | 简体中文
 
-## 自动化覆盖
+测试分为纯逻辑、宿主集成和真实端点三层。默认测试不需要 CPA 凭据，也不会调用付费模型。
 
-`npm test`：27 项纯逻辑/契约测试，包含：
+## 开发环境
 
-- 路径前缀、URL 凭据拒绝、非法/重复目录行；
-- 上下文、输出、输入模态和准确 ID 投影，保守回退；
-- reasoning true/false、稀疏档位、预算型 Claude、none/auto、max/ultra 区别；
-- 目录新增、删除、空列表、能力变化；
-- TTL、并发合并、短退避、有界 stale、401/403 立即失效、按凭据和端点隔离；
-- payload 回调组合、现有参数保留、非 reasoning 不注入参数；
-- 手动 model override 优先；
-- 旧 catalog view 不修改主配置，新 prepared API 刷新原 owner，发布不完整不误报成功；
-- 媒体模型排除、prototype 风格模型 ID、上游 reasoning 数组无序、CPA Sol ultra 矛盾诊断。
+使用满足项目及宿主要求的 Node.js 版本。在项目根目录执行：
 
-`node --test test/host.integration.js`：2 项真实宿主集成测试。
+```bash
+npm test
+npm run check
+```
 
-- 使用官方 `fetchLiveProviderModelRows` 访问本地模拟 CPA，经官方 `streamSimple` 真实发 HTTP/SSE；检查 high、max、显式 ultra、none 到最终请求体，工具定义和结果流正常。
-- 隔离 OpenClaw 配置加载真实插件、调用注册的 CLI、发现/同步目录。正常 `models list` 显示 a/b；修改端点目录并同步后为 b/c，a 消失；主配置内容不变。
+纯逻辑测试使用 Node.js 内置测试运行器，无需额外依赖。宿主集成测试还需要：
 
-`node --test test/gateway.integration.js`：1 项真实 Gateway 生命周期测试。
+- PATH 中可用的 `openclaw` 命令。
+- 项目可以解析的 `openclaw` peer SDK。
+- 可创建临时目录、启动子进程并监听回环地址的环境。
 
-- 临时独立 Gateway 启动插件服务，每 10 秒发现；a/b 自动发布为 b/c，64K 更新为 96K；成功的空目录写成空列表。
-- 明确复现 July `models.list` RPC 缓存仍为 a/b 的宿主限制。
-- 停止并重新启动测试 Gateway，RPC 显示 b/c。
-- 测试结束停止自己创建的进程；实际用户 Gateway、CPA 和主配置保持不变。
+CLI 和 peer SDK 应使用相同版本。可通过 npm 安装指定的开发测试版本：
 
-`npm run check`：JavaScript 语法检查。
+```bash
+npm install --no-save --package-lock=false openclaw@2026.7.1-2
+```
 
-## 本机真实模型请求
+不要将全局安装目录、个人凭据或部署配置写入源码和测试夹具。
 
-调用链为插件目录/能力投影 → provider stream wrapper → OpenClaw 官方流式 transport → 本机 CPA。不是仅用 curl 验证接口存在。每次只要求回答 `OK`，输出预算 512；捕获最终发送的 reasoning 参数。
+## 测试命令
 
-| 模型 | API | 发送 effort | 结果 |
-| --- | --- | --- | --- |
-| `gpt-5.6-luna` | Responses | `low` | HTTP 200，`OK`，正常 stop |
-| `grok-4.3` | Chat Completions | `none`（用户 off） | HTTP 200，`OK`，正常 stop |
-| `kimi-k3-256k` | Chat Completions | `high` | HTTP 200，`OK`，正常 stop |
-| `gpt-5.6-sol` | Responses | `max` | HTTP 200，`OK`，正常 stop |
-| `grok-4.20-0309-non-reasoning` | Chat Completions | 不发送 reasoning 参数 | HTTP 200，`OK`，正常 stop |
-| `gpt-5.6-sol` | Responses | `ultra`（显式原生透传） | **HTTP 400**，CPA 自身拒绝，实际允许 low/medium/high/xhigh/max |
+| 命令 | 范围 | 是否需要 CPA 凭据 |
+| --- | --- | --- |
+| `npm test` | 纯逻辑与 SDK 调用契约 | 否 |
+| `npm run check` | 插件入口和运行时模块语法 | 否 |
+| `npm run test:host` | 真实 OpenClaw SDK、HTTP/SSE 和 CLI | 否 |
+| `npm run test:gateway` | 隔离 Gateway 的自动目录同步 | 否 |
+| `npm run test:live` | 指定 CPA 端点的真实模型请求 | 是，会消耗额度 |
 
-最后一项是已定位的端点 metadata/验证器不一致，不能记作成功。其 wire payload 透传已在 mock 与真实请求中观察到；正常 thinking UI 不宣告 ultra。直接向 CPA Responses 接口复查也得到相同错误。
+当前自动化基线包含 37 项纯逻辑／契约测试、2 项宿主集成测试和 1 项 Gateway 测试。测试数量不代表模型覆盖率，应以各测试的断言为准。
 
-本次普通/丰富目录均返回 33 项；过滤隐藏工具/媒体项后注册 24 个文本模型。这个数值是当时快照，不是插件硬编码列表。后备表包含 77 个精确 ID 与 8 个内置媒体 ID；它不能让 CPA 未开放的模型变成可用。
+## 纯逻辑与契约测试
 
-## 未覆盖/不声称的能力
+覆盖以下行为：
 
-- 没有逐一消耗额度验证全部 24 个模型；Claude/Gemini 的预算型能力路径用源码 + 受控测试验证，本机没有拿这些模型做真实推理。
-- 没有压满 272K 或 1M 上下文测试，也没有把大上下文宣称为实际压力测试通过。
-- 没有端到端运行新版 prepared Gateway；该适配只有源码核对与参数契约测试。
-- 没有宣称当前 turn 内的压缩预算、所有非默认 agent 目录和所有旧 UI 能同步热替换。
-- 没有主动新增/移除用户 CPA 的真实账号或模型；变化场景使用可控本地 CPA 模拟服务器。
+- URL 规范化、反向代理前缀和凭据 URL 拒绝。
+- 普通／丰富目录、顶层数组、slug/id 和混合 reasoning 格式。
+- 上下文与输出限制、输入模态、隐藏模型、精确 ID 后备数据。
+- 稀疏 reasoning、none/auto、max/ultra、非 reasoning 与预算型 thinking。
+- 模型新增、删除、空目录及能力变化。
+- TTL、并发获取合并、短退避、有界 stale 和凭据隔离。
+- 混合 5xx 与 401/403 场景中的认证失效优先级。
+- 请求 payload 回调组合和显式模型覆盖。
+- 发布完整性、删除残留校验、失败重试及配置指纹。
+- 并发发布顺序、服务启动／停止和过期定时器回调。
+
+`test/official-review.test.js` 保留与官方 pi 插件设计对照后补充的格式和生命周期回归。
+
+## 宿主集成测试
+
+```bash
+npm run test:host
+npm run test:gateway
+```
+
+测试启动可控的模拟 CPA 服务，使用测试凭据和操作系统分配的临时状态目录。OpenClaw 的配置与状态通过专用环境变量指向该目录，测试结束关闭其创建的服务器和 Gateway 进程。
+
+测试目录会保留，便于检查目录文件和日志。路径由测试输出提供；清理时只删除确认属于该次测试的目录。
+
+### SDK 与 CLI
+
+`test/host.integration.js` 验证：
+
+- 官方目录 fetch 与流式传输确实发出 HTTP/SSE 请求。
+- high、max、显式 ultra、off 和 adaptive 到最终请求参数的映射。
+- 目录从 reasoning 切换为非 reasoning 后，后续请求不再发送 effort。
+- 工具 schema 和流式结果保持有效。
+- 实际安装、加载插件，并通过 CLI 发现和同步模型。
+- 目录从 a/b 更新为 b/c，已删除模型不再出现在生成列表中。
+- 同步不会修改主配置。
+
+### Gateway 生命周期
+
+`test/gateway.integration.js` 验证后台服务自动发布模型新增、删除、上下文变化及空目录，并检查 legacy Gateway 选择器缓存的重启行为。
+
+该测试面向已验证的 legacy 宿主路径。新版 prepared catalog 的契约测试不能替代新版 Gateway 端到端测试；升级兼容基线时应补充对应验证。
+
+## 真实端点测试
+
+真实测试是显式选择的操作，会向 CPA 发出推理请求并可能产生费用。请使用测试账号和已确认可用的模型。
+
+通过安全的环境注入方式提供 `CPA_API_KEY`，再设置端点和测试用例：
+
+```bash
+export CPA_BASE_URL='https://cpa.example.com/v1'
+export CPA_LIVE_CASES='[{"id":"MODEL_ID","level":"high"}]'
+npm run test:live
+```
+
+将 `MODEL_ID` 替换为实际目录中的模型。不要把真实密钥写入文档、脚本、shell 历史或问题报告。建议始终显式设置 `CPA_LIVE_CASES`，避免依赖脚本中的示例模型。
+
+每个用例接受：
+
+| 字段 | 必需 | 说明 |
+| --- | --- | --- |
+| `id` | 是 | CPA 返回的精确模型 ID |
+| `level` | 建议 | OpenClaw thinking 档位，如 off、low、high、max、adaptive |
+| `exact` | 否 | 显式 CPA reasoning effort，须已确认端点支持 |
+
+脚本检查模型是否被发现、调用是否失败，并输出协议、实际 effort、停止原因和用量，不输出认证凭据或原始上游错误体。
+
+建议选择多个能力不同的模型：非 reasoning、允许 none、稀疏档位、max 以及预算型 thinking。负面用例应单独运行；目录宣告但验证器拒绝的 effort 应记作兼容性问题，而非成功覆盖。
+
+自动化测试不主动修改 CPA 账号、配额或模型路由。目录变化使用模拟服务复现。
+
+## 更新后备元数据
+
+`data/cpa-models.json` 是固定 CPA revision 的精简快照。更新时使用完整提交 SHA：
+
+```bash
+node scripts/update-metadata.mjs CPA_COMMIT_SHA
+git diff -- data/cpa-models.json
+npm test
+```
+
+更新脚本只执行机械提取。维护者仍需审查：
+
+- 来源 revision、许可证和字段变化。
+- 同一 ID 在不同模型定义中的冲突。
+- 媒体模型分类、reasoning 预算范围和离散档位。
+- 新数据是否与实时目录产生冲突。
+
+不要将快照中的全部模型视为端点可用模型，也不要为未知 alias 添加未经证实的能力映射。
+
+## 提交前检查
+
+```bash
+git diff --check
+npm test
+npm run check
+npm run test:host
+npm run test:gateway
+npm pack --dry-run
+```
+
+涉及宿主适配或传输修改时运行集成测试；需要确认服务端行为时再显式运行真实端点测试。发布前检查包中包含运行时模块、manifest、元数据和许可证，不包含凭据、测试状态或 node_modules。
+
+## 验证边界与问题报告
+
+当前测试不证明所有 CPA 模型、最大上下文、多 agent 会话或所有 OpenClaw 版本都受支持。尤其需要区分：
+
+- 元数据映射正确与上游实际接受参数。
+- 生成目录已更新与 Gateway 选择器缓存已刷新。
+- API 契约成立与完整宿主生命周期已验证。
+- 短请求成功与最大上下文压力测试通过。
+
+报告问题时请附上插件、OpenClaw、Node.js 和 CPA 版本，最小配置、复现命令，以及脱敏后的相关模型能力和日志。提交诊断前检查端点域名、私有模型名称、密钥和请求内容，避免泄露部署信息。

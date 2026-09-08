@@ -25,6 +25,8 @@ export async function materializeCatalog(config, snapshot, runtime) {
   } else throw new Error("This OpenClaw version has no supported catalog publication API");
   const published = new Set(rows.filter((r) => r.provider === PROVIDER).map((r) => r.id));
   if (snapshot.models.some((m) => !published.has(m.id))) throw new Error("OpenClaw did not publish the complete CPA catalog; sync will retry");
+  const allowed = new Set([...snapshot.models, ...(config.models?.providers?.[PROVIDER]?.models ?? [])].map((m) => m.id));
+  if ([...published].some((id) => !allowed.has(id))) throw new Error("OpenClaw retained removed CPA models; sync will retry");
   return { synced: true, models: snapshot.models.length, revision: snapshot.revision, mode,
     ...(mode === "legacy" ? { pickerRefresh: "Existing Gateway models.list caches require a Gateway restart/config reload" } : {}) };
 }

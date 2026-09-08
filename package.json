@@ -10,6 +10,7 @@
     "data",
     "openclaw.plugin.json",
     "README.md",
+    "README.zh-CN.md",
     "docs",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
@@ -17,7 +18,7 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check index.js && node --check src/catalog.js && node --check src/provider.js && node --check src/sync.js",
+    "check": "node --check index.js && node --check src/catalog.js && node --check src/provider.js && node --check src/sync.js && node --check src/lifecycle.js",
     "test:host": "node --test test/host.integration.js",
     "test:gateway": "node --test test/gateway.integration.js",
     "test:live": "node test/live.mjs"

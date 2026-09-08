@@ -5,6 +5,7 @@ import { buildProviderReplayFamilyHooks } from "openclaw/plugin-sdk/provider-mod
 import { createCpaProvider, mergeExplicit } from "./src/provider.js";
 import { PROVIDER, normalizeBaseUrl } from "./src/catalog.js";
 import { materializeCatalog } from "./src/sync.js";
+import { createCatalogSynchronizer, createCatalogService } from "./src/lifecycle.js";
 
 export default definePluginEntry({
   id: PROVIDER,
@@ -45,36 +46,12 @@ export default definePluginEntry({
         }) ?? [];
       },
     });
-    let syncedRevision;
-    async function sync(ctx, force = false) {
-      const snapshot = await cpa.discover(ctx, { force });
-      if (!snapshot) return { synced: false, reason: "unconfigured" };
-      if (snapshot.stale || (!force && snapshot.revision === syncedRevision)) return { synced: false, reason: snapshot.stale ? "stale" : "unchanged" };
-      const runtime = await import("openclaw/plugin-sdk/agent-runtime");
-      const result = await materializeCatalog(ctx.config ?? api.config, snapshot, runtime);
-      if (result.synced) syncedRevision = snapshot.revision;
-      return result;
-    }
-    let timer;
-    let stopped = false;
-    let pending;
-    api.registerService({ id: "cliproxyapi-catalog",
-      async start(ctx) {
-        stopped = false;
-        try { await sync(ctx); } catch { ctx.logger.warn("CPA discovery unavailable at startup; catalog sync will retry"); }
-        const tick = async () => {
-          if (stopped) return;
-          pending = sync(ctx).catch(() => ctx.logger.warn("CPA catalog sync failed; retrying on the next interval"));
-          try { await pending; } finally {
-            pending = undefined;
-            if (!stopped) { timer = setTimeout(tick, cpa.client.ttlMs); timer.unref?.(); }
-          }
-        };
-        timer = setTimeout(tick, cpa.client.ttlMs);
-        timer.unref?.();
-      },
-      async stop() { stopped = true; clearTimeout(timer); await pending; },
+    const sync = createCatalogSynchronizer({
+      discover: cpa.discover, config: api.config,
+      publish: async (config, snapshot) => materializeCatalog(config, snapshot,
+        await import("openclaw/plugin-sdk/agent-runtime")),
     });
+    api.registerService(createCatalogService({ sync, intervalMs: cpa.client.ttlMs }));
     api.registerCli(({ program, config }) => {
       const command = program.command("cpa").description("CLIProxyAPI model discovery diagnostics");
       command.command("sync").description("Refresh OpenClaw model catalog state without editing configuration")
