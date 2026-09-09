@@ -52,6 +52,25 @@ openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 
 If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.
 
+## Update
+
+For a ClawHub installation, preview the update using the plugin ID `cliproxyapi`:
+
+```bash
+openclaw plugins update cliproxyapi --dry-run
+```
+
+After reviewing the preview, apply the update and restart the Gateway to load it:
+
+```bash
+openclaw plugins update cliproxyapi
+openclaw gateway restart
+```
+
+`plugins update` takes the installed plugin ID. Installation uses the package name `@sagemoyi/openclaw-cliproxyapi-provider`, and the display name is **OpenClaw CLIProxyAPI Provider**; updates still use `cliproxyapi`. If the plugin cannot be found, run `openclaw plugins list` and check that the command uses the configuration and state directory where it was installed.
+
+Updates use the recorded installation source. For a source installation with `--link`, update that checkout and restart the Gateway. For a local `.tgz` installation, install the new package file.
+
 ## Interactive setup (recommended)
 
 ```bash
@@ -255,7 +274,7 @@ OpenClaw versions with `agents.defaults.modelPolicy.allow` use that explicit pol
 
 ### Sync reports success but does not exit
 
-OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. For one-shot sync commands that exit normally, use the verified `2026.9.3` host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md).
+OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. For one-shot sync commands that exit normally, use the verified `2026.9.3` host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md). If either August host must be retained, see the separate [host patches and rollback instructions](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw); plugin updates do not apply these patches automatically.
 
 ### Provider or login method is missing
 

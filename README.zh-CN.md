@@ -52,6 +52,25 @@ openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 
 如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
 
+## 升级
+
+通过 ClawHub 安装后，使用插件 ID `cliproxyapi` 预览升级：
+
+```bash
+openclaw plugins update cliproxyapi --dry-run
+```
+
+确认预览结果后执行升级，并重启 Gateway 加载新版本：
+
+```bash
+openclaw plugins update cliproxyapi
+openclaw gateway restart
+```
+
+`plugins update` 的参数是已安装的插件 ID。安装时使用的包名是 `@sagemoyi/openclaw-cliproxyapi-provider`，展示名是 **OpenClaw CLIProxyAPI Provider**；升级时仍使用 `cliproxyapi`。如果提示找不到插件，运行 `openclaw plugins list`，并确认当前命令使用的是安装该插件的配置和状态目录。
+
+升级命令使用记录的安装来源。通过 `--link` 安装的源码版本应更新对应检出目录，再重启 Gateway；通过本地 `.tgz` 安装的版本应安装新的包文件。
+
 ## 交互式配置（推荐）
 
 ```bash
@@ -255,7 +274,7 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 
 ### sync 已输出成功，但进程不退出
 
-在 OpenClaw `2026.8.1` / `2026.8.2` 上已复现 prepared 目录发布完成后宿主工作线程仍保持进程存活。需要正常退出的一次性同步命令时，建议使用已验证的 `2026.9.3`。详见 [兼容性复核](docs/COMPATIBILITY.zh-CN.md)。
+在 OpenClaw `2026.8.1` / `2026.8.2` 上已复现 prepared 目录发布完成后宿主工作线程仍保持进程存活。需要正常退出的一次性同步命令时，建议使用已验证的 `2026.9.3`。详见 [兼容性复核](docs/COMPATIBILITY.zh-CN.md)。必须保留这两个旧版宿主时，可参考独立的 [宿主补丁与回滚说明](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw)；插件升级不会自动应用该补丁。
 
 ### 找不到 provider 或登录入口
 
