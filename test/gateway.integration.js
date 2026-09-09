@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { installHostPlugin } from "./install-host-plugin.js";
 const exec = promisify(execFile);
 const runtime = await import("openclaw/plugin-sdk/agent-runtime");
 const prepared = typeof runtime.loadPreparedModelCatalog === "function";
@@ -38,6 +39,8 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
+  await installHostPlugin((...args) => exec("openclaw", args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 }));
+  const installedConfig = await readFile(configPath, "utf8");
   let child, log = "";
   function start() {
     child = spawn("openclaw", ["gateway", "run", "--port", String(port)], { env, stdio: ["ignore", "pipe", "pipe"] });
@@ -79,6 +82,6 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   }
   ids = [];
   await waitFor(inventory, (rows) => rows.length === 0, "empty catalog publication");
-  assert.equal(await readFile(configPath, "utf8"), JSON.stringify(config));
+  assert.equal(await readFile(configPath, "utf8"), installedConfig);
   t.diagnostic(`Catalog mode: ${prepared ? "prepared (no restart)" : "legacy"}; isolated artifacts: ${stateDir}`);
 });
