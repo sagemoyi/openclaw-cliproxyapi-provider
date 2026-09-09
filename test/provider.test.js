@@ -30,7 +30,7 @@ test("standard explicit provider/model overrides win", () => {
 test("provider refreshes capabilities, refuses deleted models, and composes payload callbacks", async () => {
   let ids = ["custom"], efforts = ["low", "high"], time = 1, payload;
   const cfg = { models: { providers: { cliproxyapi: { baseUrl: "http://localhost:8317/v1", models: [] } } },
-    plugins: { entries: { cliproxyapi: { config: { refreshSeconds: 10 } } } } };
+    plugins: { entries: { "openclaw-cliproxyapi-provider": { config: { refreshSeconds: 10 } } } } };
   const cpa = createCpaProvider({ config: cfg, now: () => time, resolveAuth: async () => ({ apiKey: "secret" }),
     fetchRows: async ({ endpoint }) => ids.map((id) => endpoint.includes("?") ? { slug: id, context_window: 64000,
       supported_reasoning_levels: efforts.map((effort) => ({ effort })) } : { id }) });
