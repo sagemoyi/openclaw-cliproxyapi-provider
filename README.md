@@ -309,3 +309,7 @@ See [Testing and development](docs/DEVELOPMENT.md) and [Architecture and compati
 Discovery and refresh design draws on the official [pi-cliproxyapi-provider](https://github.com/router-for-me/pi-cliproxyapi-provider). This is an independent OpenClaw integration, not a fork of that plugin, and does not provide its TUI, Fast, pause, or compaction features.
 
 Licensed under the [MIT License](LICENSE). See [Third-party notices](THIRD_PARTY_NOTICES.md) for bundled CPA metadata attribution and licensing.
+
+## Links
+
+[Linux.do](https://linux.do/)

@@ -309,3 +309,7 @@ openclaw gateway restart
 模型发现和刷新设计参考了官方 [pi-cliproxyapi-provider](https://github.com/router-for-me/pi-cliproxyapi-provider)。本项目是独立的 OpenClaw 适配，不是官方 pi 插件的 fork，也不提供其 TUI、Fast、暂停或压缩功能。
 
 本项目采用 [MIT License](LICENSE)。随包 CPA 元数据的来源及许可证见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+
+## 友情链接
+
+[Linux.do](https://linux.do/)
