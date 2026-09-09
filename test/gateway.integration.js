@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { buildAuthModelAccessPatch } from "../src/auth.js";
 import { installHostPlugin } from "./install-host-plugin.js";
 const exec = promisify(execFile);
 const runtime = await import("openclaw/plugin-sdk/agent-runtime");
@@ -35,6 +36,12 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
     models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
     plugins: { allow: ["cliproxyapi"], load: { paths: [process.cwd()] }, entries: { cliproxyapi: { enabled: true, config: { refreshSeconds: 10 } } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), model: { primary: "cliproxyapi/model-b" }, models: { "cliproxyapi/*": {} } } } };
+  // Reproduce login on a modern host with a pre-existing policy that hides CPA.
+  if (prepared) {
+    config.agents.defaults.modelPolicy = { allow: ["unrelated/model"] };
+    Object.assign(config.agents.defaults, buildAuthModelAccessPatch(config).defaults);
+    assert.deepEqual(config.agents.defaults.modelPolicy.allow, ["unrelated/model", "cliproxyapi/*"]);
+  }
   await writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };

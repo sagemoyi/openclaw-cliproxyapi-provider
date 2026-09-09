@@ -47,7 +47,7 @@ Alternatively, create an installable package:
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.1.tgz
 ```
 
 If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.
@@ -57,6 +57,20 @@ If you use `plugins.allow`, add `cliproxyapi` to the existing list without repla
 ```bash
 openclaw models auth login --provider cliproxyapi --method api-key
 ```
+
+If multiple agents are configured, OpenClaw may report `Multiple agents are configured, but the model command has no explicit owner. Pass --agent <id>.` First list the agent IDs:
+
+```bash
+openclaw agents list
+```
+
+Then select the agent that owns this authentication, replacing `AGENT_ID` with an actual ID from the list:
+
+```bash
+openclaw models auth login --agent AGENT_ID --provider cliproxyapi --method api-key
+```
+
+To inspect that agent's models afterward, use `openclaw models list --agent AGENT_ID --all --provider cliproxyapi`.
 
 Enter:
 
@@ -234,6 +248,10 @@ The default protocol is selected from model ownership and known model type: Open
 The plugin does not delete existing providers or rewrite sessions. Context and compaction budgets in an active session are not guaranteed to be recalculated within the current turn.
 
 ## Troubleshooting
+
+### Models discovered but missing from the picker
+
+OpenClaw versions with `agents.defaults.modelPolicy.allow` use that explicit policy ahead of the legacy `agents.defaults.models` entries. Since 0.1.1, login also adds `cliproxyapi/*` to an existing default policy while preserving its entries. After upgrading from 0.1.0, rerun login for the intended agent, or merge `cliproxyapi/*` into the existing policy. If the agent has its own `modelPolicy.allow`, that policy takes precedence and must allow CPA models as well. Repeated Gateway restarts do not change model visibility policy.
 
 ### Provider or login method is missing
 

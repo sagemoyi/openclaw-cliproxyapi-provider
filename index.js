@@ -5,6 +5,7 @@ import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runt
 import { buildProviderReplayFamilyHooks } from "openclaw/plugin-sdk/provider-model-shared";
 import { createCpaProvider, mergeExplicit } from "./src/provider.js";
 import { PROVIDER, normalizeBaseUrl } from "./src/catalog.js";
+import { buildAuthModelAccessPatch } from "./src/auth.js";
 import { materializeCatalog } from "./src/sync.js";
 import { createCatalogSynchronizer, createCatalogService } from "./src/lifecycle.js";
 
@@ -31,7 +32,7 @@ export default definePluginEntry({
         return {
           profiles: [{ profileId: `${PROVIDER}:default`, credential: { type: "api_key", provider: PROVIDER, key } }],
           configPatch: { models: { providers: { [PROVIDER]: { baseUrl, models: providerConfig.models } } },
-            agents: { defaults: { models: { [`${PROVIDER}/*`]: {} } } } },
+            agents: buildAuthModelAccessPatch(ctx.config) },
           notes: [`Discovered ${catalog.models.length} text models. Select one with openclaw models set cliproxyapi/<model-id>.`],
         };
       },

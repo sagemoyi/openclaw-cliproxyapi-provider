@@ -47,7 +47,7 @@ openclaw plugins install --link .
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.1.tgz
 ```
 
 如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
@@ -57,6 +57,20 @@ openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.0.tgz
 ```bash
 openclaw models auth login --provider cliproxyapi --method api-key
 ```
+
+如果配置了多个 agent，OpenClaw 可能提示 `Multiple agents are configured, but the model command has no explicit owner. Pass --agent <id>.`。先查看 agent ID：
+
+```bash
+openclaw agents list
+```
+
+然后指定本次认证所属的 agent，将 `AGENT_ID` 替换为列表中的实际 ID：
+
+```bash
+openclaw models auth login --agent AGENT_ID --provider cliproxyapi --method api-key
+```
+
+后续查看该 agent 的模型时，可使用 `openclaw models list --agent AGENT_ID --all --provider cliproxyapi`。
 
 按提示输入：
 
@@ -234,6 +248,10 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 插件不自动删除旧 provider 或重写会话。已有会话的上下文和压缩预算不保证在当前 turn 内重新计算。
 
 ## 故障排查
+
+### 能发现模型，但选择器中没有显示
+
+支持 `agents.defaults.modelPolicy.allow` 的 OpenClaw 版本会优先使用这份显式策略，而非旧字段 `agents.defaults.models`。从 0.1.1 起，登录也会将 `cliproxyapi/*` 合并到已有的默认策略，保留原有条目。从 0.1.0 升级后，请为目标 agent 重新运行登录，或将 `cliproxyapi/*` 合并到现有策略。如果 agent 自己设置了 `modelPolicy.allow`，该策略优先级更高，也需要允许 CPA 模型。反复重启 Gateway 不会改变模型可见性策略。
 
 ### 找不到 provider 或登录入口
 

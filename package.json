@@ -1,6 +1,6 @@
 {
   "name": "@sagemoyi/openclaw-cliproxyapi-provider",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLIProxyAPI discovery and capability-aware provider for OpenClaw",
   "type": "module",
   "license": "MIT",
@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check index.js && node --check src/catalog.js && node --check src/provider.js && node --check src/sync.js && node --check src/lifecycle.js",
+    "check": "node --check index.js && node --check src/auth.js && node --check src/catalog.js && node --check src/provider.js && node --check src/sync.js && node --check src/lifecycle.js",
     "test:host": "node --test test/host.integration.js",
     "test:gateway": "node --test test/gateway.integration.js",
     "test:live": "node test/live.mjs"
