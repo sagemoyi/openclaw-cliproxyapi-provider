@@ -1,8 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-// Plugin management identity is separate from model and auth references.
-export const PLUGIN_ID = "openclaw-cliproxyapi-provider";
 export const PROVIDER = "cliproxyapi";
 export const SNAPSHOT = JSON.parse(readFileSync(new URL("../data/cpa-models.json", import.meta.url), "utf8"));
 const ZERO_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };

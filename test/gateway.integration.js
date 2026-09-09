@@ -35,7 +35,7 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   const token = "isolated-gateway-test-token";
   const config = { gateway: { mode: "local", port, bind: "loopback", auth: { mode: "token", token } },
     models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
-    plugins: { allow: ["openclaw-cliproxyapi-provider"], load: { paths: [process.cwd()] }, entries: { "openclaw-cliproxyapi-provider": { enabled: true, config: { refreshSeconds: 10 } } } },
+    plugins: { allow: ["cliproxyapi"], load: { paths: [process.cwd()] }, entries: { cliproxyapi: { enabled: true, config: { refreshSeconds: 10 } } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), model: { primary: "cliproxyapi/model-b" }, models: { "cliproxyapi/*": {} } } } };
   // Reproduce login on a modern host with a pre-existing policy that hides CPA.
   if (prepared) {
@@ -65,7 +65,7 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
       { env, timeout: 15000, maxBuffer: 4 * 1024 * 1024 });
     return JSON.parse(result.stdout).models.filter((m) => m.provider === "cliproxyapi");
   };
-  const disk = async () => JSON.parse(await readFile(path.join(stateDir, "agents/main/agent/plugins/openclaw-cliproxyapi-provider/catalog.json"), "utf8")).providers.cliproxyapi.models;
+  const disk = async () => JSON.parse(await readFile(path.join(stateDir, "agents/main/agent/plugins/cliproxyapi/catalog.json"), "utf8")).providers.cliproxyapi.models;
   async function waitFor(read, predicate, label) {
     const until = Date.now() + 45000; let last;
     while (Date.now() < until) {

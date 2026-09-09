@@ -4,7 +4,7 @@
 
 为 [OpenClaw](https://github.com/openclaw/openclaw) 提供 [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI)（CPA）动态模型发现。配置端点和凭据后，插件自动加载可用模型、解析模型能力，并同步到 OpenClaw 的模型目录。
 
-插件 ID：`openclaw-cliproxyapi-provider`。模型 provider ID：`cliproxyapi`。使用 OpenClaw 公共插件 SDK，无需修改 OpenClaw 或 CPA 核心。
+独立 provider ID：`cliproxyapi`。使用 OpenClaw 公共插件 SDK，无需修改 OpenClaw 或 CPA 核心。
 
 ## 功能
 
@@ -24,8 +24,6 @@
 旧版 OpenClaw 的 Gateway 模型选择器可能保留目录缓存。插件可更新生成目录和请求时的能力信息，但选择器可能需要重启 Gateway 才能显示变化。详见 [故障排查](#故障排查)。
 
 ## 安装
-
-**0.2.0** 使用新插件 ID。**0.1.2** 及更早版本使用 `cliproxyapi`；旧安装升级前，请先按 [ID 迁移说明](docs/PLUGIN_ID_MIGRATION.zh-CN.md) 操作。
 
 从 ClawHub 安装公开版本：
 
@@ -49,29 +47,27 @@ openclaw plugins install --link .
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 ```
 
-如果启用了 `plugins.allow`，请将 `openclaw-cliproxyapi-provider` 加入现有列表，不要替换其他已允许的插件。
+如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
 
 ## 升级
 
-以下命令适用于已安装新 ID 的版本。0.1.2 及更早版本使用 `openclaw plugins update cliproxyapi`，切换到 0.2.0 需要 [一次性迁移](docs/PLUGIN_ID_MIGRATION.zh-CN.md)。
-
-通过 ClawHub 安装后，使用插件 ID `openclaw-cliproxyapi-provider` 预览升级：
+通过 ClawHub 安装后，使用插件 ID `cliproxyapi` 预览升级：
 
 ```bash
-openclaw plugins update openclaw-cliproxyapi-provider --dry-run
+openclaw plugins update cliproxyapi --dry-run
 ```
 
 确认预览结果后执行升级，并重启 Gateway 加载新版本：
 
 ```bash
-openclaw plugins update openclaw-cliproxyapi-provider
+openclaw plugins update cliproxyapi
 openclaw gateway restart
 ```
 
-`plugins update` 的参数是已安装的插件 ID。安装时使用的包名是 `@sagemoyi/openclaw-cliproxyapi-provider`，展示名是 **OpenClaw CLIProxyAPI Provider**；升级时使用 `openclaw-cliproxyapi-provider`。如果提示找不到插件，运行 `openclaw plugins list`，并确认当前命令使用的是安装该插件的配置和状态目录。
+`plugins update` 的参数是已安装的插件 ID。安装时使用的包名是 `@sagemoyi/openclaw-cliproxyapi-provider`，展示名是 **OpenClaw CLIProxyAPI Provider**；升级时仍使用 `cliproxyapi`。如果提示找不到插件，运行 `openclaw plugins list`，并确认当前命令使用的是安装该插件的配置和状态目录。
 
 升级命令使用记录的安装来源。通过 `--link` 安装的源码版本应更新对应检出目录，再重启 Gateway；通过本地 `.tgz` 安装的版本应安装新的包文件。
 
@@ -144,7 +140,7 @@ openclaw gateway restart
   },
   "plugins": {
     "entries": {
-      "openclaw-cliproxyapi-provider": {
+      "cliproxyapi": {
         "enabled": true
       }
     }
@@ -195,7 +191,7 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 {
   "plugins": {
     "entries": {
-      "openclaw-cliproxyapi-provider": {
+      "cliproxyapi": {
         "enabled": true,
         "config": {
           "refreshSeconds": 60,
@@ -282,7 +278,7 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 
 ### 找不到 provider 或登录入口
 
-检查 `openclaw plugins list` 中插件是否已加载，并确认 `plugins.allow` 包含 `openclaw-cliproxyapi-provider`。安装或更新后，运行中的 Gateway 需要加载新插件代码。
+检查 `openclaw plugins list` 中插件是否已加载，并确认 `plugins.allow` 包含 `cliproxyapi`。安装或更新后，运行中的 Gateway 需要加载新插件代码。
 
 如果登录在出现输入提示之前报告 CLI 与已安装 Gateway 使用不同的状态目录或配置路径，这是宿主拒绝向不一致的存储写入。请确认当前命令的状态目录和配置路径是否属于目标 Gateway；隔离测试应使用专用测试配置。不要把这类错误归为 CPA 密钥无效。
 

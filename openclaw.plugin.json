@@ -1,5 +1,5 @@
 {
-  "id": "openclaw-cliproxyapi-provider",
+  "id": "cliproxyapi",
   "name": "OpenClaw CLIProxyAPI Provider",
   "description": "Discover CPA models and capabilities using the standard provider runtime",
   "providers": ["cliproxyapi"],

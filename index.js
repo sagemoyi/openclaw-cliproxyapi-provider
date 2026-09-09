@@ -4,13 +4,13 @@ import { isNonSecretApiKeyMarker } from "openclaw/plugin-sdk/provider-auth";
 import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runtime";
 import { buildProviderReplayFamilyHooks } from "openclaw/plugin-sdk/provider-model-shared";
 import { createCpaProvider, mergeExplicit } from "./src/provider.js";
-import { PLUGIN_ID, PROVIDER, normalizeBaseUrl } from "./src/catalog.js";
+import { PROVIDER, normalizeBaseUrl } from "./src/catalog.js";
 import { buildAuthModelAccessPatch } from "./src/auth.js";
 import { materializeCatalog } from "./src/sync.js";
 import { createCatalogSynchronizer, createCatalogService } from "./src/lifecycle.js";
 
 export default definePluginEntry({
-  id: PLUGIN_ID,
+  id: PROVIDER,
   name: "OpenClaw CLIProxyAPI Provider",
   description: "Discover CPA models and capabilities without hand-maintained model lists",
   register(api) {

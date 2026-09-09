@@ -139,7 +139,7 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const stateDir = await mkdtemp(path.join(tmpdir(), "cpa-openclaw-test-"));
   const configPath = path.join(stateDir, "openclaw.json");
   const config = { models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
-    plugins: { allow: ["openclaw-cliproxyapi-provider"], load: { paths: [process.cwd()] }, entries: { "openclaw-cliproxyapi-provider": { enabled: true } } },
+    plugins: { allow: ["cliproxyapi"], load: { paths: [process.cwd()] }, entries: { cliproxyapi: { enabled: true } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), models: { "cliproxyapi/*": {} } } } };
   await writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
@@ -150,7 +150,7 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const installedConfig = await readFile(configPath, "utf8");
   const listing = await cli("plugins", "list", "--json");
   const parsed = JSON.parse(listing.stdout);
-  const plugin = parsed.plugins.find((p) => p.id === "openclaw-cliproxyapi-provider");
+  const plugin = parsed.plugins.find((p) => p.id === "cliproxyapi");
   assert.equal(plugin.status, "loaded", JSON.stringify(plugin));
   const initial = JSON.parse((await cli("cpa", "catalog")).stdout);
   assert.deepEqual(initial.models.map((m) => m.id), ids);

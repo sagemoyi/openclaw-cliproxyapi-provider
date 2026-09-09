@@ -4,7 +4,7 @@ English | [简体中文](README.zh-CN.md)
 
 An [OpenClaw](https://github.com/openclaw/openclaw) provider that discovers models from [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) (CPA). Configure an endpoint and API key to load available models, map their capabilities, and keep the OpenClaw catalog up to date.
 
-Plugin ID: `openclaw-cliproxyapi-provider`. Model provider ID: `cliproxyapi`. Built on the public OpenClaw plugin SDK; no OpenClaw or CPA core changes required.
+Provider ID: `cliproxyapi`. Built on the public OpenClaw plugin SDK; no OpenClaw or CPA core changes required.
 
 ## What it does
 
@@ -24,8 +24,6 @@ Plugin ID: `openclaw-cliproxyapi-provider`. Model provider ID: `cliproxyapi`. Bu
 Some older OpenClaw versions cache the Gateway model picker separately. Generated catalogs and request-time capabilities can update while the picker still requires a Gateway restart. See [Troubleshooting](#troubleshooting).
 
 ## Install
-
-**0.2.0** uses the new plugin ID. Versions through **0.1.2** use `cliproxyapi`; follow [ID migration](docs/PLUGIN_ID_MIGRATION.md) before upgrading an existing installation.
 
 Install the published plugin from ClawHub:
 
@@ -49,29 +47,27 @@ Alternatively, create an installable package:
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 ```
 
-If you use `plugins.allow`, add `openclaw-cliproxyapi-provider` to the existing list without replacing other allowed plugins.
+If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.
 
 ## Update
 
-These commands apply after installing the new ID. Versions up to 0.1.2 use `openclaw plugins update cliproxyapi`; they require a [one-time migration](docs/PLUGIN_ID_MIGRATION.md) to 0.2.0.
-
-For a ClawHub installation, preview the update using the plugin ID `openclaw-cliproxyapi-provider`:
+For a ClawHub installation, preview the update using the plugin ID `cliproxyapi`:
 
 ```bash
-openclaw plugins update openclaw-cliproxyapi-provider --dry-run
+openclaw plugins update cliproxyapi --dry-run
 ```
 
 After reviewing the preview, apply the update and restart the Gateway to load it:
 
 ```bash
-openclaw plugins update openclaw-cliproxyapi-provider
+openclaw plugins update cliproxyapi
 openclaw gateway restart
 ```
 
-`plugins update` takes the installed plugin ID. Installation uses the package name `@sagemoyi/openclaw-cliproxyapi-provider`, and the display name is **OpenClaw CLIProxyAPI Provider**; updates use `openclaw-cliproxyapi-provider`. If the plugin cannot be found, run `openclaw plugins list` and check that the command uses the configuration and state directory where it was installed.
+`plugins update` takes the installed plugin ID. Installation uses the package name `@sagemoyi/openclaw-cliproxyapi-provider`, and the display name is **OpenClaw CLIProxyAPI Provider**; updates still use `cliproxyapi`. If the plugin cannot be found, run `openclaw plugins list` and check that the command uses the configuration and state directory where it was installed.
 
 Updates use the recorded installation source. For a source installation with `--link`, update that checkout and restart the Gateway. For a local `.tgz` installation, install the new package file.
 
@@ -144,7 +140,7 @@ Merge this into your OpenClaw configuration, preserving existing providers, plug
   },
   "plugins": {
     "entries": {
-      "openclaw-cliproxyapi-provider": {
+      "cliproxyapi": {
         "enabled": true
       }
     }
@@ -195,7 +191,7 @@ Configure these under the plugin entry:
 {
   "plugins": {
     "entries": {
-      "openclaw-cliproxyapi-provider": {
+      "cliproxyapi": {
         "enabled": true,
         "config": {
           "refreshSeconds": 60,
@@ -282,7 +278,7 @@ OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog
 
 ### Provider or login method is missing
 
-Check `openclaw plugins list` and ensure `plugins.allow` includes `openclaw-cliproxyapi-provider`. After installation or updates, the running Gateway must load the new plugin code.
+Check `openclaw plugins list` and ensure `plugins.allow` includes `cliproxyapi`. After installation or updates, the running Gateway must load the new plugin code.
 
 If login fails before prompting because the CLI and installed Gateway use different state directories or config paths, the host has refused a write to a divergent store. Check that the command targets the intended Gateway configuration; use a dedicated configuration for isolated tests. This error does not establish that the CPA key is invalid.
 

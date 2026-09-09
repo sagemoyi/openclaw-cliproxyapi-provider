@@ -1,4 +1,4 @@
-import { CatalogClient, PLUGIN_ID, PROVIDER, EFFORTS, normalizeBaseUrl } from "./catalog.js";
+import { CatalogClient, PROVIDER, EFFORTS, normalizeBaseUrl } from "./catalog.js";
 
 const toLevel = (effort) => effort === "none" ? "off" : effort === "auto" ? "adaptive" : effort;
 const toEffort = (level) => level === "off" ? "none" : level === "adaptive" ? "auto" : level;
@@ -63,7 +63,7 @@ export function mergeExplicit(model, config) {
 }
 
 export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger = { warn() {} }, now, replayHooks = {}, isApiKeyMarker }) {
-  const settings = config.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
+  const settings = config.plugins?.entries?.[PROVIDER]?.config ?? {};
   const client = new CatalogClient({ fetchRows, now, ttlMs: (settings.refreshSeconds ?? 60) * 1000,
     staleMs: (settings.staleSeconds ?? 300) * 1000, timeoutMs: settings.timeoutMs ?? 10000,
     useBundledMetadata: settings.useBundledMetadata ?? true, warn: (m) => logger.warn(m) });
