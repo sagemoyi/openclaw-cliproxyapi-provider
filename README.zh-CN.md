@@ -313,4 +313,4 @@ openclaw gateway restart
 ## 友情链接
 
 [Linux.do](https://linux.do/)
-[NodeSeek](https://www.nodeseek.com/))
+[NodeSeek](https://www.nodeseek.com/)
