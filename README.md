@@ -314,4 +314,4 @@ Licensed under the [MIT License](LICENSE). See [Third-party notices](THIRD_PARTY
 
 [Linux.do](https://linux.do/)
 
-[nodeseek](https://www.nodeseek.com/))
+[nodeseek](https://www.nodeseek.com/)
