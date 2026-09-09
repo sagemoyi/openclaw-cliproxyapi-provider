@@ -1,0 +1,46 @@
+name: Provider compatibility
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.16.0'
+      - run: npm run check
+      - run: npm test
+
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        openclaw: ['2026.7.1-2', '2026.9.3']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+      # Exact peer versions: these jobs are compatibility gates, not a promise
+      # that a future OpenClaw plugin API is compatible.
+      - run: npm install --no-save --package-lock=false openclaw@${{ matrix.openclaw }}
+      - run: npm run check
+      - run: npm test
+      - run: npm run test:host
+      - run: npm run test:gateway
+      - run: npm pack --dry-run --json

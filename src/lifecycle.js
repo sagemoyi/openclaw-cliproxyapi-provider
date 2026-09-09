@@ -12,10 +12,10 @@ export function createCatalogSynchronizer({ discover, publish, config }) {
       const currentConfig = ctx.config ?? config;
       // Hash rather than retain serialized config: it may contain credentials.
       const key = createHash("sha256").update(JSON.stringify([
-        snapshot.baseUrl, snapshot.revision, ctx.agentDir, currentConfig,
+        snapshot.baseUrl, snapshot.revision, ctx.agentId, ctx.agentDir, ctx.workspaceDir, currentConfig,
       ])).digest("hex");
       if (!force && key === publishedKey) return { synced: false, reason: "unchanged" };
-      const result = await publish(currentConfig, snapshot);
+      const result = await publish(currentConfig, snapshot, ctx);
       if (result.synced) publishedKey = key;
       return result;
     });

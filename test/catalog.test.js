@@ -25,7 +25,7 @@ test("empty effort list is authoritative; unknown models get conservative defaul
 });
 test("CPA native metadata corrects template-inherited reasoning without replacing a changed live contract", () => {
   for (const id of ["kimi-k2", "grok-4.20-0309-non-reasoning"]) {
-    const m = projectModel(basic(id), rich(id, ["low", "medium", "high", "xhigh"]));
+    const m = projectModel(basic(id, id === "kimi-k2" ? "moonshot" : "xai"), rich(id, ["low", "medium", "high", "xhigh"]));
     assert.equal(m.reasoning, false);
     assert.ok(m.params.cpa.warnings.some((w) => w.includes("template corrected")));
   }

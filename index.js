@@ -1,5 +1,6 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { fetchLiveProviderModelRows } from "openclaw/plugin-sdk/provider-catalog-live-runtime";
+import { isNonSecretApiKeyMarker } from "openclaw/plugin-sdk/provider-auth";
 import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runtime";
 import { buildProviderReplayFamilyHooks } from "openclaw/plugin-sdk/provider-model-shared";
 import { createCpaProvider, mergeExplicit } from "./src/provider.js";
@@ -13,7 +14,7 @@ export default definePluginEntry({
   description: "Discover CPA models and capabilities without hand-maintained model lists",
   register(api) {
     const cpa = createCpaProvider({ config: api.config, logger: api.logger, fetchRows: fetchLiveProviderModelRows,
-      resolveAuth: resolveApiKeyForProvider, replayHooks: buildProviderReplayFamilyHooks({ family: "openai-compatible" }) });
+      resolveAuth: resolveApiKeyForProvider, isApiKeyMarker: isNonSecretApiKeyMarker, replayHooks: buildProviderReplayFamilyHooks({ family: "openai-compatible" }) });
     cpa.provider.auth = [{
       id: "api-key", label: "CPA endpoint and API key", kind: "api_key",
       async run(ctx) {
@@ -48,8 +49,8 @@ export default definePluginEntry({
     });
     const sync = createCatalogSynchronizer({
       discover: cpa.discover, config: api.config,
-      publish: async (config, snapshot) => materializeCatalog(config, snapshot,
-        await import("openclaw/plugin-sdk/agent-runtime")),
+      publish: async (config, snapshot, ctx) => materializeCatalog(config, snapshot,
+        await import("openclaw/plugin-sdk/agent-runtime"), ctx),
     });
     api.registerService(createCatalogService({ sync, intervalMs: cpa.client.ttlMs }));
     api.registerCli(({ program, config }) => {

@@ -1,4 +1,5 @@
-// Explicit integration test against the installed July 2026 Gateway.
+// Requires an installed OpenClaw peer. Prepared hosts are checked through public RPC;
+// the legacy sidecar assertion remains isolated to hosts without prepared catalogs.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -8,11 +9,14 @@ import path from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 const exec = promisify(execFile);
+const runtime = await import("openclaw/plugin-sdk/agent-runtime");
+const prepared = typeof runtime.loadPreparedModelCatalog === "function";
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-test("Gateway auto-publishes changes and empty catalogs; July picker cache refreshes on restart", { timeout: 150000 }, async (t) => {
+test("Gateway publishes additions, removals, capabilities and empty catalogs on the host-owned path", { timeout: 150000 }, async (t) => {
   let ids = ["model-a", "model-b"], context = 64000;
   const server = createServer((req, res) => {
+    if (req.headers.authorization !== "Bearer test-key") { res.writeHead(401); res.end("{}"); return; }
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(req.url.includes("?") ? { models: ids.map((slug) => ({ slug, context_window: context,
       supported_reasoning_levels: [{ effort: "high" }] })) } : { data: ids.map((id) => ({ id })) }));
@@ -62,15 +66,19 @@ test("Gateway auto-publishes changes and empty catalogs; July picker cache refre
   }
   await waitFor(list, (rows) => rows.some((m) => m.id === "model-a"), "initial discovery");
   ids = ["model-b", "model-c"]; context = 96000;
-  const changed = await waitFor(disk, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
+  const inventory = prepared ? list : disk;
+  const changed = await waitFor(inventory, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
   assert.equal(changed.find((m) => m.id === "model-b").contextWindow, 96000);
-  // Regression evidence for the documented host limitation: the old RPC cache is private.
-  const oldPicker = await list();
-  t.diagnostic(`Before restart, Gateway picker still caches model-a: ${oldPicker.some((m) => m.id === "model-a")}`);
-  await stop(); start();
-  await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "picker after restart");
+  if (!prepared) {
+    // Legacy hosts own a separate picker cache. Do not weaken the prepared-host
+    // assertion by restarting a September Gateway to make stale rows disappear.
+    const oldPicker = await list();
+    t.diagnostic(`Legacy picker caches model-a: ${oldPicker.some((m) => m.id === "model-a")}`);
+    await stop(); start();
+    await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "legacy picker after restart");
+  }
   ids = [];
-  await waitFor(disk, (rows) => rows.length === 0, "empty catalog publication");
+  await waitFor(inventory, (rows) => rows.length === 0, "empty catalog publication");
   assert.equal(await readFile(configPath, "utf8"), JSON.stringify(config));
-  t.diagnostic(`Isolated Gateway artifacts: ${stateDir}`);
+  t.diagnostic(`Catalog mode: ${prepared ? "prepared (no restart)" : "legacy"}; isolated artifacts: ${stateDir}`);
 });

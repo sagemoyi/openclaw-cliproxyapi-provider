@@ -2,13 +2,17 @@ import { PROVIDER } from "./catalog.js";
 import { mergeExplicit } from "./provider.js";
 
 /** All catalog writes and locking stay in the host. Never write openclaw.json. */
-export async function materializeCatalog(config, snapshot, runtime) {
+export async function materializeCatalog(config, snapshot, runtime, ctx = {}) {
   if (snapshot.stale) return { synced: false, reason: "stale" };
   let rows, mode;
   if (typeof runtime.loadPreparedModelCatalog === "function") {
     // September SDK: refresh the published inventory on its real lifecycle owner.
     // Do not create a synthetic config generation in the new atomic runtime.
-    rows = await runtime.loadPreparedModelCatalog({ config, readOnly: false, refreshFullCatalog: true });
+    rows = await runtime.loadPreparedModelCatalog({ config, readOnly: false, refreshFullCatalog: true,
+      ...(ctx.agentId ? { agentId: ctx.agentId } : {}),
+      ...(ctx.agentDir ? { agentDir: ctx.agentDir } : {}),
+      ...(ctx.workspaceDir ? { workspaceDir: ctx.workspaceDir } : {}),
+    });
     mode = "prepared";
   } else if (typeof runtime.loadModelCatalog === "function") {
     // July SDK: the legacy source fingerprint otherwise has no discovery TTL.

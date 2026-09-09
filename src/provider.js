@@ -15,12 +15,17 @@ export function thinkingProfile(model) {
 
 export function selectEffort(model, requested, exact) {
   const supported = model.compat?.supportedReasoningEfforts ?? [];
+  if (!model.reasoning || model.compat?.supportsReasoningEffort === false) {
+    if (exact !== undefined) throw new Error("cpaReasoningEffort conflicts with disabled reasoning controls");
+    return undefined;
+  }
   if (exact !== undefined) {
     if (typeof exact !== "string" || !supported.includes(exact)) throw new Error("cpaReasoningEffort is not advertised by the selected CPA model");
     return exact;
   }
-  if (!model.reasoning) return undefined;
-  const wanted = toEffort(requested);
+  // Logical /think ultra belongs to OpenClaw orchestration. Raw CPA ultra
+  // is an explicitly opted-in wire override only (handled above).
+  const wanted = toEffort(requested === "ultra" ? "max" : requested);
   if (supported.includes(wanted)) return wanted;
   // off cannot mean 'omit' for an always-thinking model: omission lets CPA use its default.
   // Fall back by strength for stale session settings, matching OpenClaw's thinking profiles.
@@ -30,7 +35,8 @@ export function selectEffort(model, requested, exact) {
       .sort((a, b) => EFFORTS.indexOf(a) - EFFORTS.indexOf(b));
     if (lower.length) return lower.at(-1);
   }
-  const fallback = model.params?.cpa?.defaultEffort;
+  const advertisedDefault = model.params?.cpa?.defaultEffort;
+  const fallback = advertisedDefault === "ultra" ? "max" : advertisedDefault;
   return supported.includes(fallback) ? fallback : supported.find((x) => x !== "ultra");
 }
 
@@ -56,31 +62,59 @@ export function mergeExplicit(model, config) {
   return merged;
 }
 
-export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger = { warn() {} }, now, replayHooks = {} }) {
+export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger = { warn() {} }, now, replayHooks = {}, isApiKeyMarker }) {
   const settings = config.plugins?.entries?.[PROVIDER]?.config ?? {};
   const client = new CatalogClient({ fetchRows, now, ttlMs: (settings.refreshSeconds ?? 60) * 1000,
     staleMs: (settings.staleSeconds ?? 300) * 1000, timeoutMs: settings.timeoutMs ?? 10000,
     useBundledMetadata: settings.useBundledMetadata ?? true, warn: (m) => logger.warn(m) });
   const bindings = new Map();
-  const scope = (ctx, baseUrl) => `${ctx.agentDir ?? ""}\0${baseUrl}`;
+  const scope = (ctx, baseUrl) => JSON.stringify([ctx.agentDir, ctx.workspaceDir, ctx.authProfileId, baseUrl]);
   const endpoint = (ctx) => normalizeBaseUrl((ctx.config ?? config).models?.providers?.[PROVIDER]?.baseUrl);
   function remember(ctx, baseUrl, apiKey) {
     const key = scope(ctx, baseUrl);
     if (bindings.size >= 16 && !bindings.has(key)) bindings.delete(bindings.keys().next().value);
-    bindings.set(key, { ctx, baseUrl, apiKey });
+    // Keep only the cache fingerprint, not a second copy of credentials/config.
+    bindings.set(key, client.key(baseUrl, apiKey));
   }
   async function discover(ctx = {}, { force = false, apiKey } = {}) {
+    ctx.signal?.throwIfAborted();
+    // Scoped catalog reads must remain scoped even when this plugin is enabled.
+    if (ctx.providerIds && !ctx.providerIds.includes(PROVIDER)) return null;
     const cfg = ctx.config ?? config;
     if (!cfg.models?.providers?.[PROVIDER]?.baseUrl) return null;
     const baseUrl = endpoint(ctx);
     let persistedKey;
     if (!apiKey) {
-      const auth = ctx.resolveProviderAuth?.(PROVIDER) ?? ctx.resolveProviderApiKey?.(PROVIDER);
-      persistedKey = auth?.apiKey;
-      apiKey = auth?.discoveryApiKey ?? auth?.apiKey;
-      if (!apiKey) apiKey = (await resolveAuth({ provider: PROVIDER, cfg, agentDir: ctx.agentDir, workspaceDir: ctx.workspaceDir }))?.apiKey;
+      const resolver = ctx.resolveProviderAuth ?? ctx.resolveProviderApiKey;
+      if (resolver) {
+        // A host-owned selection is authoritative; never retry it using another
+        // profile or a new auth generation after preparation failed or returned none.
+        const auth = resolver(PROVIDER);
+        if (auth?.preparationFailed) {
+          bindings.delete(scope(ctx, baseUrl));
+          throw new Error("CPA credential preparation failed; check OpenClaw provider authentication");
+        }
+        persistedKey = auth?.apiKey;
+        apiKey = auth?.discoveryApiKey;
+        if (!apiKey && auth?.apiKey) {
+          // Only the host knows its marker grammar. Fail closed without that
+          // classifier; do not send an unresolved placeholder to the server.
+          if (!isApiKeyMarker || isApiKeyMarker(auth.apiKey)) {
+            bindings.delete(scope(ctx, baseUrl));
+            throw new Error("CPA discovery requires resolved credentials, not an auth marker");
+          }
+          apiKey = auth.apiKey;
+        }
+      } else {
+        apiKey = (await resolveAuth({ provider: PROVIDER, cfg, agentDir: ctx.agentDir,
+          workspaceDir: ctx.workspaceDir, profileId: ctx.authProfileId }))?.apiKey;
+      }
     }
-    if (!apiKey) return null;
+    ctx.signal?.throwIfAborted();
+    if (!apiKey) {
+      bindings.delete(scope(ctx, baseUrl));
+      return null;
+    }
     remember(ctx, baseUrl, apiKey);
     const value = await client.get({ baseUrl, apiKey, force, signal: ctx.signal });
     return { ...value, persistedKey: persistedKey ?? apiKey };
@@ -89,7 +123,7 @@ export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger 
     let baseUrl;
     try { baseUrl = endpoint(ctx); } catch { return undefined; }
     const binding = bindings.get(scope(ctx, baseUrl));
-    return binding ? client.peek(baseUrl, binding.apiKey) : undefined;
+    return binding ? client.peekByKey(binding) : undefined;
   }
   function runtimeModel(model, ctx, baseUrl) {
     return { ...mergeExplicit(model, ctx.config ?? config), provider: PROVIDER, baseUrl };
@@ -120,7 +154,11 @@ export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger 
       return { provider: { baseUrl: snapshot.baseUrl, apiKey: snapshot.persistedKey, api: "openai-completions", models: snapshot.models } };
     } },
     staticCatalog: { order: "simple", async run() { return null; } },
-    async prepareDynamicModel(ctx) { await discover(ctx); },
+    async prepareDynamicModel(ctx) {
+      const snapshot = await discover(ctx);
+      const row = snapshot?.models.find((m) => m.id === ctx.modelId);
+      return row ? runtimeModel(row, ctx, snapshot.baseUrl) : undefined;
+    },
     resolveDynamicModel(ctx) {
       const snapshot = current(ctx);
       const row = snapshot?.models.find((m) => m.id === ctx.modelId);
@@ -132,18 +170,14 @@ export function createCpaProvider({ fetchRows, resolveAuth, config = {}, logger 
       return row ? { ...ctx.model, ...runtimeModel(row, ctx, snapshot.baseUrl) } : undefined;
     },
     resolveThinkingProfile(ctx) {
-      // Prefer current model metadata passed by the host, which includes explicit user overrides.
-      if (ctx.compat?.supportedReasoningEfforts) return thinkingProfile(ctx);
-      const snapshots = [...bindings.values()].map((b) => client.peek(b.baseUrl, b.apiKey)).filter(Boolean);
-      if (snapshots.length === 1) return thinkingProfile(snapshots[0].models.find((m) => m.id === ctx.modelId));
-      return thinkingProfile(ctx);
+      // This hook has no agent/endpoint/auth scope. Only host-supplied facts are
+      // safe; a process-wide "only cached model" is not the selected model.
+      if (ctx.reasoning === false || Array.isArray(ctx.compat?.supportedReasoningEfforts)) return thinkingProfile(ctx);
+      return undefined;
     },
     wrapStreamFn: wrap,
     wrapSimpleCompletionStreamFn: wrap,
     buildUnknownModelHint() { return " Check `openclaw cpa catalog`; CPA availability can change with account health and quota."; },
   };
-  return { provider, client, discover, current, async refreshKnown() {
-    const results = await Promise.allSettled([...bindings.values()].map((b) => discover(b.ctx, { force: true })));
-    for (const result of results) if (result.status === "rejected") logger.warn(result.reason.message);
-  } };
+  return { provider, client, discover, current };
 }
