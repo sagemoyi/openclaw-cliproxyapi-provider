@@ -1,6 +1,6 @@
 # Plugin ID migration (0.2.0)
 
-0.2.0 changes the plugin ID from `cliproxyapi` to `openclaw-cliproxyapi-provider`. This is currently an unreleased source change; the published ClawHub version 0.1.2 still uses the old ID.
+0.2.0 changes the plugin ID from `cliproxyapi` to `openclaw-cliproxyapi-provider`. Versions through 0.1.2 use the old ID and require the migration below.
 
 | Purpose | Through 0.1.2 | 0.2.0 |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ plugin id mismatch: expected cliproxyapi, got openclaw-cliproxyapi-provider
 ## Existing installations
 
 1. Use the same OpenClaw configuration, profile, and state directory as the original installation. Back up the active configuration and authentication state. Preserve the complete `plugins.entries.cliproxyapi` entry, including `enabled` and `config`, plus the original `plugins.allow` and `plugins.deny` lists if present. Keep credential-bearing backups out of Git.
-2. Prepare the new installation source before uninstalling. For the current source, run `npm pack` in this repository to produce `sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz`. Verify its manifest ID is `openclaw-cliproxyapi-provider`. Until 0.2.0 is published, installing from ClawHub still gives the old ID.
+2. Prepare the new installation source before uninstalling. For the current source, run `npm pack` in this repository to produce `sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz`. Verify its manifest ID is `openclaw-cliproxyapi-provider`. If installing from ClawHub, verify that the selected version is 0.2.0 or later.
 3. Stop the Gateway, preview removal, then uninstall the old plugin:
 
    ```bash
@@ -38,7 +38,7 @@ plugin id mismatch: expected cliproxyapi, got openclaw-cliproxyapi-provider
    openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz
    ```
 
-   Once 0.2.0 is published on ClawHub, install from the following source instead to enable subsequent `plugins update` commands:
+   To enable subsequent `plugins update` commands, install from ClawHub instead:
 
    ```bash
    openclaw plugins install clawhub:@sagemoyi/openclaw-cliproxyapi-provider

@@ -25,7 +25,7 @@
 
 ## 安装
 
-当前源码面向 **0.2.0（尚未发布）**，使用新插件 ID。已发布的 **0.1.2** 仍使用 `cliproxyapi`；旧安装切换到当前源码前，请先阅读 [ID 迁移说明](docs/PLUGIN_ID_MIGRATION.zh-CN.md)。
+**0.2.0** 使用新插件 ID。**0.1.2** 及更早版本使用 `cliproxyapi`；旧安装升级前，请先按 [ID 迁移说明](docs/PLUGIN_ID_MIGRATION.zh-CN.md) 操作。
 
 从 ClawHub 安装公开版本：
 

@@ -25,7 +25,7 @@ Some older OpenClaw versions cache the Gateway model picker separately. Generate
 
 ## Install
 
-The current source targets **0.2.0 (unreleased)** with the new plugin ID. The published **0.1.2** still uses `cliproxyapi`; see [ID migration](docs/PLUGIN_ID_MIGRATION.md) before moving an existing installation to this source.
+**0.2.0** uses the new plugin ID. Versions through **0.1.2** use `cliproxyapi`; follow [ID migration](docs/PLUGIN_ID_MIGRATION.md) before upgrading an existing installation.
 
 Install the published plugin from ClawHub:
 

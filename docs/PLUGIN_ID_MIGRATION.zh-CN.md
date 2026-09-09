@@ -1,6 +1,6 @@
 # 插件 ID 迁移（0.2.0）
 
-0.2.0 将插件 ID 从 `cliproxyapi` 改为 `openclaw-cliproxyapi-provider`。当前为尚未发布的源码变更；ClawHub 的 0.1.2 仍使用旧 ID。
+0.2.0 将插件 ID 从 `cliproxyapi` 改为 `openclaw-cliproxyapi-provider`。0.1.2 及更早版本使用旧 ID，需要按下文迁移。
 
 | 用途 | 0.1.2 及更早 | 0.2.0 |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ plugin id mismatch: expected cliproxyapi, got openclaw-cliproxyapi-provider
 ## 已有安装
 
 1. 在原来安装插件的同一 OpenClaw 配置、profile 和状态目录下操作。备份实际使用的配置文件和认证状态，保留 `plugins.entries.cliproxyapi` 的完整内容（包括 `enabled` 和 `config`），以及原来的 `plugins.allow`、`plugins.deny`（如有）。不要将含凭据的备份提交到 Git。
-2. 先准备好新版本安装源。当前可以在本仓库运行 `npm pack`，得到 `sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz`。确认新包 manifest 的 ID 是 `openclaw-cliproxyapi-provider`。在 0.2.0 发布前，重新从 ClawHub 安装仍会得到旧 ID。
+2. 先准备好新版本安装源。当前可以在本仓库运行 `npm pack`，得到 `sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz`。确认新包 manifest 的 ID 是 `openclaw-cliproxyapi-provider`。如果从 ClawHub 安装，请确认所选版本为 0.2.0 或更高。
 3. 停止 Gateway，预览卸载旧插件，再执行卸载：
 
    ```bash
@@ -38,7 +38,7 @@ plugin id mismatch: expected cliproxyapi, got openclaw-cliproxyapi-provider
    openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.2.0.tgz
    ```
 
-   0.2.0 在 ClawHub 正式发布后，可以改为从以下来源安装，以便后续使用 `plugins update`：
+   也可以改为从 ClawHub 安装，以便后续使用 `plugins update`：
 
    ```bash
    openclaw plugins install clawhub:@sagemoyi/openclaw-cliproxyapi-provider
