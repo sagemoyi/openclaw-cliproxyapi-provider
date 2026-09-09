@@ -80,7 +80,12 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
   const cli = async (...args) => exec("openclaw", args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 });
-  await cli("plugins", "install", "--link", process.cwd());
+  // This test installs the checked-out source into a fresh isolated state directory.
+  // September hosts require explicit trust confirmation for local plugin sources.
+  // July hosts reject --force with --link; detect the newer confirmation option.
+  const installHelp = (await cli("plugins", "install", "--help")).stdout;
+  const trustArgs = /Confirm non-ClawHub sources/.test(installHelp) ? ["--force"] : [];
+  await cli("plugins", "install", "--link", ...trustArgs, process.cwd());
   const installedConfig = await readFile(configPath, "utf8");
   const listing = await cli("plugins", "list", "--json");
   const parsed = JSON.parse(listing.stdout);
