@@ -25,6 +25,14 @@ Some older OpenClaw versions cache the Gateway model picker separately. Generate
 
 ## Install
 
+Install the published plugin from ClawHub:
+
+```bash
+openclaw plugins install clawhub:@sagemoyi/openclaw-cliproxyapi-provider
+```
+
+Use an OpenClaw version that supports the `clawhub:` plugin source. Then follow the interactive setup below and restart the Gateway to load the plugin.
+
 From source:
 
 ```bash
@@ -39,7 +47,7 @@ Alternatively, create an installable package:
 
 ```bash
 npm pack
-openclaw plugins install ./openclaw-cliproxyapi-provider-0.1.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.0.tgz
 ```
 
 If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.

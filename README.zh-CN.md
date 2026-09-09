@@ -25,6 +25,14 @@
 
 ## 安装
 
+从 ClawHub 安装公开版本：
+
+```bash
+openclaw plugins install clawhub:@sagemoyi/openclaw-cliproxyapi-provider
+```
+
+请使用支持 `clawhub:` 插件来源的 OpenClaw 版本。安装后按下文完成交互式配置，并重启 Gateway 加载插件。
+
 从源码安装：
 
 ```bash
@@ -39,7 +47,7 @@ openclaw plugins install --link .
 
 ```bash
 npm pack
-openclaw plugins install ./openclaw-cliproxyapi-provider-0.1.0.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.0.tgz
 ```
 
 如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
