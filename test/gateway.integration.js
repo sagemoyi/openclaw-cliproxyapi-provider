@@ -1,3 +1,4 @@
+import "./isolated-host-env.js";
 // Requires an installed OpenClaw peer. Prepared hosts are checked through public RPC;
 // the legacy sidecar assertion remains isolated to hosts without prepared catalogs.
 import test from "node:test";

@@ -1,3 +1,4 @@
+import "./isolated-host-env.js";
 // Explicit integration suite: requires an installed OpenClaw executable + peer SDK.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -61,6 +62,70 @@ test("real SDK fetch + streaming transport honor string efforts, adaptive, non-r
   assert.equal(Object.hasOwn(requests.at(-1), "reasoning_effort"), false);
 });
 
+test("real SDK resolves OpenAI-owned Codex models to Responses and preserves Responses failures", async (t) => {
+  const requests = [];
+  let rejectResponses = false;
+  const modelId = "gpt-5.3-codex-spark";
+  const server = createServer(async (req, res) => {
+    assert.equal(req.headers.authorization, "Bearer test-key");
+    if (req.url.startsWith("/v1/models")) {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(req.url.includes("?")
+        ? { models: [{ slug: modelId, context_window: 128000, max_tokens: 4096,
+          supported_reasoning_levels: ["low", "high"] }] }
+        : { data: [{ id: modelId, owned_by: "openai" }] }));
+      return;
+    }
+    let body = ""; for await (const chunk of req) body += chunk;
+    requests.push({ url: req.url, method: req.method, body: JSON.parse(body) });
+    assert.equal(req.url, "/v1/responses");
+    assert.equal(req.method, "POST");
+    if (rejectResponses) {
+      res.statusCode = 403;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: { message: "mock access denied" } }));
+      return;
+    }
+    res.setHeader("Content-Type", "text/event-stream");
+    const event = (payload) => res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    event({ type: "response.created", response: { id: "resp-mock" } });
+    event({ type: "response.output_item.added", item: { id: "msg-mock", type: "message", role: "assistant", content: [] } });
+    event({ type: "response.content_part.added", part: { type: "output_text", text: "" } });
+    event({ type: "response.output_text.delta", delta: "OK" });
+    event({ type: "response.output_item.done", item: { id: "msg-mock", type: "message",
+      content: [{ type: "output_text", text: "OK" }] } });
+    event({ type: "response.completed", response: { id: "resp-mock", status: "completed",
+      usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 } } });
+    res.end();
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const baseUrl = `http://127.0.0.1:${server.address().port}/v1`;
+  const config = { models: { providers: { cliproxyapi: { baseUrl, models: [] } } } };
+  const cpa = createCpaProvider({ config, fetchRows: fetchLiveProviderModelRows, resolveAuth: async () => ({ apiKey: "test-key" }) });
+  const ctx = { config, modelId, thinkingLevel: "high", streamFn: streamSimple };
+  await cpa.provider.catalog.run(ctx);
+  const model = cpa.provider.resolveDynamicModel(ctx);
+  assert.equal(model.api, "openai-responses");
+  const wrapped = cpa.provider.wrapStreamFn(ctx);
+  const input = { messages: [{ role: "user", content: "Reply only with OK.", timestamp: Date.now() }] };
+  const successful = await wrapped(model, input, { apiKey: "test-key", maxTokens: 32 });
+  const result = await successful.result();
+  assert.equal(result.stopReason, "stop", result.errorMessage);
+  assert.equal(result.content.filter((part) => part.type === "text").map((part) => part.text).join(""), "OK");
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].body.model, modelId);
+  assert.equal(requests[0].body.reasoning.effort, "high");
+  assert.equal(requests[0].body.stream, true);
+
+  rejectResponses = true;
+  const rejected = await wrapped(model, input, { apiKey: "test-key", maxTokens: 32 });
+  const rejectedResult = await rejected.result();
+  assert.equal(rejectedResult.stopReason, "error");
+  assert.match(rejectedResult.errorMessage, /403/);
+  assert.deepEqual(requests.map((request) => request.url), ["/v1/responses", "/v1/responses"]);
+});
+
 test("isolated OpenClaw CLI installs and loads the provider and fetches live catalogs", { timeout: 120000 }, async (t) => {
   let ids = ["model-a", "model-b"];
   const server = createServer((req, res) => {
@@ -90,6 +155,8 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const initial = JSON.parse((await cli("cpa", "catalog")).stdout);
   assert.deepEqual(initial.models.map((m) => m.id), ids);
   assert.ok(!JSON.stringify(initial).includes("test-key"));
+  assert.ok(!Object.hasOwn(initial, "baseUrl"));
+  assert.ok(!JSON.stringify(initial).includes(config.models.providers.cliproxyapi.baseUrl));
   const firstSync = JSON.parse((await cli("cpa", "sync")).stdout);
   assert.equal(firstSync.synced, true);
   const firstList = await cli("models", "list", "--all", "--provider", "cliproxyapi", "--json");

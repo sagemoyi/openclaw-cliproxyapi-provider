@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openclaw: ['2026.7.1-2', '2026.9.3']
+        openclaw: ['2026.7.1-2', '2026.9.1', '2026.9.2', '2026.9.3']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

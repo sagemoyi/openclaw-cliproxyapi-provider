@@ -18,7 +18,7 @@ Provider ID: `cliproxyapi`. Built on the public OpenClaw plugin SDK; no OpenClaw
 ## Requirements
 
 - Node.js 22.16.0 or later, also satisfying your OpenClaw version's runtime requirements.
-- OpenClaw 2026.7.1-2 or later. See [Architecture and compatibility](docs/ARCHITECTURE.md) for validation boundaries.
+- OpenClaw 2026.7.1-2 or later. See [Architecture and compatibility](docs/ARCHITECTURE.md) for validation boundaries. See the [issue #1 verification record (Chinese)](docs/COMPATIBILITY.zh-CN.md) for the cross-version investigation.
 - A reachable CPA HTTP(S) endpoint and a model-access API key. No management key is required.
 
 Some older OpenClaw versions cache the Gateway model picker separately. Generated catalogs and request-time capabilities can update while the picker still requires a Gateway restart. See [Troubleshooting](#troubleshooting).
@@ -47,7 +47,7 @@ Alternatively, create an installable package:
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.1.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 ```
 
 If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.
@@ -149,7 +149,7 @@ Reverse-proxy path prefixes are supported. Embedded usernames, passwords, query 
 
 | Command | Purpose |
 | --- | --- |
-| `openclaw cpa catalog` | Query model capabilities, metadata sources, and diagnostics without printing credentials |
+| `openclaw cpa catalog` | Query model capabilities, metadata sources, and diagnostics without printing credentials or the endpoint URL |
 | `openclaw cpa sync` | Request a refresh and publish the catalog; return synchronization status without editing the main configuration |
 | `openclaw models list --all --provider cliproxyapi` | List CPA models in the OpenClaw catalog |
 
@@ -253,9 +253,15 @@ The plugin does not delete existing providers or rewrite sessions. Context and c
 
 OpenClaw versions with `agents.defaults.modelPolicy.allow` use that explicit policy ahead of the legacy `agents.defaults.models` entries. Since 0.1.1, login also adds `cliproxyapi/*` to an existing default policy while preserving its entries. After upgrading from 0.1.0, rerun login for the intended agent, or merge `cliproxyapi/*` into the existing policy. If the agent has its own `modelPolicy.allow`, that policy takes precedence and must allow CPA models as well. Repeated Gateway restarts do not change model visibility policy.
 
+### Sync reports success but does not exit
+
+OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. For one-shot sync commands that exit normally, use the verified `2026.9.3` host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md).
+
 ### Provider or login method is missing
 
 Check `openclaw plugins list` and ensure `plugins.allow` includes `cliproxyapi`. After installation or updates, the running Gateway must load the new plugin code.
+
+If login fails before prompting because the CLI and installed Gateway use different state directories or config paths, the host has refused a write to a divergent store. Check that the command targets the intended Gateway configuration; use a dedicated configuration for isolated tests. This error does not establish that the CPA key is invalid.
 
 ### Discovery succeeds, but the picker shows old models
 

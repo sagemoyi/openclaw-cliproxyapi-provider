@@ -37,7 +37,7 @@ npm install --no-save --package-lock=false openclaw@2026.7.1-2
 | `npm run test:gateway` | 隔离 Gateway 的自动目录同步 | 否 |
 | `npm run test:live` | 指定 CPA 端点的真实模型请求 | 是，会消耗额度 |
 
-当前自动化基线包含 37 项纯逻辑／契约测试、2 项宿主集成测试和 1 项 Gateway 测试。测试数量不代表模型覆盖率，应以各测试的断言为准。
+自动化测试包含纯逻辑／契约、宿主集成和 Gateway 测试。测试数量以当前运行输出为准；数量不代表模型覆盖率，应以各测试的断言为准。
 
 ## 纯逻辑与契约测试
 
@@ -63,7 +63,7 @@ npm run test:host
 npm run test:gateway
 ```
 
-测试启动可控的模拟 CPA 服务，使用测试凭据和操作系统分配的临时状态目录。OpenClaw 的配置与状态通过专用环境变量指向该目录，测试结束关闭其创建的服务器和 Gateway 进程。
+测试在导入宿主 SDK 前就创建独立状态目录和空配置，避免旧宿主读取个人环境中的新版数据库；同时清除进程继承的 API key/token 等凭据变量，防止宿主自动启用无关 provider。测试启动可控的模拟 CPA 服务，使用测试凭据和操作系统分配的临时状态目录。OpenClaw 的配置与状态通过专用环境变量指向该目录，测试结束关闭其创建的服务器和 Gateway 进程。
 
 测试目录会保留，便于检查目录文件和日志。路径由测试输出提供；清理时只删除确认属于该次测试的目录。
 
@@ -72,6 +72,7 @@ npm run test:gateway
 `test/host.integration.js` 验证：
 
 - 官方目录 fetch 与流式传输确实发出 HTTP/SSE 请求。
+- Codex 模型使用 `/v1/responses`、正确的认证头及 reasoning 参数；Responses SSE 成功返回文本，403 保持失败且不切换协议。
 - high、max、显式 ultra、off 和 adaptive 到最终请求参数的映射。
 - 目录从 reasoning 切换为非 reasoning 后，后续请求不再发送 effort。
 - 工具 schema 和流式结果保持有效。
@@ -83,7 +84,7 @@ npm run test:gateway
 
 `test/gateway.integration.js` 验证后台服务自动发布模型新增、删除、上下文变化及空目录，并检查 legacy Gateway 选择器缓存的重启行为。
 
-该测试面向已验证的 legacy 宿主路径。新版 prepared catalog 的契约测试不能替代新版 Gateway 端到端测试；升级兼容基线时应补充对应验证。
+该测试按宿主 API 选择验证路径：legacy 宿主检查生成目录及重启后的选择器；prepared 宿主通过公开 `models.list` RPC 验证无需重启的更新，并覆盖已有 `modelPolicy.allow` 的合并。每个宿主版本仍需单独运行，某一版本通过不代表其他版本已通过。
 
 ## 真实端点测试
 

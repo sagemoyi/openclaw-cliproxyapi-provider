@@ -11,7 +11,7 @@ import { createCatalogSynchronizer, createCatalogService } from "./src/lifecycle
 
 export default definePluginEntry({
   id: PROVIDER,
-  name: "CLIProxyAPI",
+  name: "OpenClaw CLIProxyAPI Provider",
   description: "Discover CPA models and capabilities without hand-maintained model lists",
   register(api) {
     const cpa = createCpaProvider({ config: api.config, logger: api.logger, fetchRows: fetchLiveProviderModelRows,
@@ -62,9 +62,9 @@ export default definePluginEntry({
         .action(async () => {
           const result = await cpa.discover({ config }, { force: true });
           if (!result) throw new Error("Configure models.providers.cliproxyapi.baseUrl and CPA credentials first");
-          // Do not serialize the discovery auth marker/key.
-          const { persistedKey, ...safe } = result;
-          console.log(JSON.stringify(safe, null, 2));
+          // Only publish diagnostic fields, excluding endpoint and auth state.
+          const { models, fetchedAt, stale, rich, revision } = result;
+          console.log(JSON.stringify({ models, fetchedAt, stale, rich, revision }, null, 2));
         });
     }, { commands: ["cpa"] });
   },

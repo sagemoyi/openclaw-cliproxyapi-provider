@@ -18,7 +18,7 @@
 ## 要求
 
 - Node.js 22.16.0 或更高版本，同时满足所使用 OpenClaw 版本的运行要求。
-- OpenClaw 2026.7.1-2 或更高版本；SDK 兼容范围和验证边界见 [架构与兼容性](docs/RESEARCH.md)。
+- OpenClaw 2026.7.1-2 或更高版本；SDK 兼容范围和验证边界见 [架构与兼容性](docs/RESEARCH.md)，跨版本反馈复核见 [issue #1 测试记录](docs/COMPATIBILITY.zh-CN.md)。
 - 一个可访问的 CPA HTTP(S) 端点，以及具有模型访问权限的 API key。无需管理密钥。
 
 旧版 OpenClaw 的 Gateway 模型选择器可能保留目录缓存。插件可更新生成目录和请求时的能力信息，但选择器可能需要重启 Gateway 才能显示变化。详见 [故障排查](#故障排查)。
@@ -47,7 +47,7 @@ openclaw plugins install --link .
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.1.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
 ```
 
 如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
@@ -149,7 +149,7 @@ openclaw gateway restart
 
 | 命令 | 用途 |
 | --- | --- |
-| `openclaw cpa catalog` | 查询模型能力、元数据来源和诊断信息，不输出认证凭据 |
+| `openclaw cpa catalog` | 查询模型能力、元数据来源和诊断信息，不输出认证凭据或端点地址 |
 | `openclaw cpa sync` | 请求刷新并发布目录，返回同步结果；不修改主配置 |
 | `openclaw models list --all --provider cliproxyapi` | 查看 OpenClaw 目录中的 CPA 模型 |
 
@@ -253,9 +253,15 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 
 支持 `agents.defaults.modelPolicy.allow` 的 OpenClaw 版本会优先使用这份显式策略，而非旧字段 `agents.defaults.models`。从 0.1.1 起，登录也会将 `cliproxyapi/*` 合并到已有的默认策略，保留原有条目。从 0.1.0 升级后，请为目标 agent 重新运行登录，或将 `cliproxyapi/*` 合并到现有策略。如果 agent 自己设置了 `modelPolicy.allow`，该策略优先级更高，也需要允许 CPA 模型。反复重启 Gateway 不会改变模型可见性策略。
 
+### sync 已输出成功，但进程不退出
+
+在 OpenClaw `2026.8.1` / `2026.8.2` 上已复现 prepared 目录发布完成后宿主工作线程仍保持进程存活。需要正常退出的一次性同步命令时，建议使用已验证的 `2026.9.3`。详见 [兼容性复核](docs/COMPATIBILITY.zh-CN.md)。
+
 ### 找不到 provider 或登录入口
 
 检查 `openclaw plugins list` 中插件是否已加载，并确认 `plugins.allow` 包含 `cliproxyapi`。安装或更新后，运行中的 Gateway 需要加载新插件代码。
+
+如果登录在出现输入提示之前报告 CLI 与已安装 Gateway 使用不同的状态目录或配置路径，这是宿主拒绝向不一致的存储写入。请确认当前命令的状态目录和配置路径是否属于目标 Gateway；隔离测试应使用专用测试配置。不要把这类错误归为 CPA 密钥无效。
 
 ### 目录查询成功，但选择器仍显示旧模型
 

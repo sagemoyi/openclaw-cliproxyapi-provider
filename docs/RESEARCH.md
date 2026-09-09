@@ -90,7 +90,7 @@ HTTP 目录访问使用 `fetchLiveProviderModelRows`。推理请求继续走宿�
 | 组件 | 基线 | 验证范围 |
 | --- | --- | --- |
 | OpenClaw | `2026.7.1-2` | 真实 SDK、CLI 安装和隔离 Gateway 集成 |
-| OpenClaw prepared catalog | 下列固定源码 revision | API 契约与实现审查，未完成新版 Gateway E2E |
+| OpenClaw prepared catalog | `2026.9.1`、`2026.9.2`、`2026.9.3` | 真实 SDK、CLI 和隔离 Gateway；通过公开 RPC 验证无需重启的目录更新 |
 | CPA | `v7.2.149` 与下列固定源码 revision | 目录及 thinking 逻辑审查、代表性请求验证 |
 | 官方 pi 插件 | `1.4.15` | 目录解析、映射、缓存与刷新实现参考 |
 

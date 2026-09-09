@@ -37,7 +37,7 @@ Do not embed global installation paths, personal credentials, or deployment conf
 | `npm run test:gateway` | Isolated Gateway catalog synchronization | Not required |
 | `npm run test:live` | Real requests to a configured CPA endpoint | Required; consumes quota |
 
-The current automated baseline contains 37 pure/contract tests, two host integration tests, and one Gateway test. Test counts do not measure model coverage; inspect their assertions.
+The automated suites cover pure logic/contracts, host integration, and the Gateway. Current run output gives the test counts; counts do not measure model coverage, so inspect their assertions.
 
 ## Pure logic and contracts
 
@@ -63,7 +63,7 @@ npm run test:host
 npm run test:gateway
 ```
 
-Tests start controlled mock CPA servers with test credentials and OS-allocated temporary state directories. Dedicated environment variables isolate OpenClaw configuration and state. Servers and Gateway processes created by the tests are stopped afterward.
+Before importing the host SDK, tests create an isolated state directory and empty configuration so older hosts cannot open a user’s newer database. They also remove inherited API key/token credentials to prevent automatic activation of unrelated providers. Tests start controlled mock CPA servers with test credentials and OS-allocated temporary state directories. Dedicated environment variables isolate OpenClaw configuration and state. Servers and Gateway processes created by the tests are stopped afterward.
 
 Artifact directories are retained for inspection, and their paths appear in test output. Remove only directories confirmed to belong to the relevant test run.
 
@@ -72,6 +72,7 @@ Artifact directories are retained for inspection, and their paths appear in test
 `test/host.integration.js` verifies:
 
 - Real HTTP/SSE traffic through the official discovery and streaming SDK.
+- Codex models use `/v1/responses` with the expected authentication and reasoning parameters; Responses SSE yields text, while HTTP 403 remains an error without switching protocols.
 - high, max, explicit ultra, off, and adaptive mapping to final request parameters.
 - No effort injection after the catalog changes to non-reasoning.
 - Tool schemas and streamed results remain valid.
@@ -83,7 +84,7 @@ Artifact directories are retained for inspection, and their paths appear in test
 
 `test/gateway.integration.js` checks automatic publication of additions, deletions, context changes, and an empty catalog, plus restart behavior for the legacy picker cache.
 
-It targets the validated legacy integration. Prepared-catalog contract tests do not replace end-to-end tests on the newer Gateway; add those when advancing the compatibility baseline.
+The host API determines the assertions: legacy hosts use the generated catalog and the picker after a restart; prepared hosts use the public `models.list` RPC to verify updates without restarting, including merging an existing `modelPolicy.allow`. Run this suite separately on each host version; success on one version does not establish coverage of another.
 
 ## Live endpoint tests
 
