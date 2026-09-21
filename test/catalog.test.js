@@ -20,7 +20,7 @@ test("rich metadata uses default context, not maximum possible context, and keep
 test("empty effort list is authoritative; unknown models get maximal defaults", () => {
   assert.equal(projectModel(basic(), rich("test-model", [])).reasoning, false);
   const m = projectModel(basic());
-  assert.equal(m.contextWindow, 1000000); assert.equal(m.maxTokens, 65535); assert.equal(m.reasoning, true);
+  assert.equal(m.contextWindow, 300000); assert.equal(m.maxTokens, 65535); assert.equal(m.reasoning, true);
   assert.deepEqual(m.compat.supportedReasoningEfforts, ["none", "low", "medium", "high", "xhigh", "max"]);
   assert.deepEqual(m.input, ["text", "image"]);
 });
@@ -53,7 +53,7 @@ test("invalid rows fail the snapshot instead of silently causing model deletions
 });
 test("invalid token limits do not escape to the runtime", () => {
   const m = projectModel(basic(), { ...rich(), context_window: -1, max_tokens: Infinity });
-  assert.equal(m.contextWindow, 1000000); assert.equal(m.maxTokens, 65535);
+  assert.equal(m.contextWindow, 300000); assert.equal(m.maxTokens, 65535);
 });
 function fixture() {
   let time = 1000, calls = 0, failure, models = ["a"], levels = ["low", "high"];

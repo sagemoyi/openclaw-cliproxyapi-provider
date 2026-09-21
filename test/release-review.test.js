@@ -150,7 +150,7 @@ test("explicit supportsReasoningEffort:false is honored on the wire", () => {
 
 test("mismatched ownership never borrows capabilities from a same-ID bundled model", () => {
   const m = projectModel({ id: "gpt-5.5", owned_by: "private-router" });
-  assert.equal(m.contextWindow, 1000000);
+  assert.equal(m.contextWindow, 300000);
   assert.equal(m.maxTokens, 65535);
   assert.deepEqual(m.input, ["text", "image"]);
   assert.equal(m.reasoning, true);
