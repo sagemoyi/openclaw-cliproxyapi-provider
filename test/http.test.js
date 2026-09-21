@@ -105,7 +105,7 @@ test("loopback HTTP: unsupported rich discovery falls back, server failure does 
   const args = { baseUrl, apiKey: "test-key" };
   const result = await client.get(args);
   assert.equal(result.rich, false);
-  assert.equal(result.models[0].contextWindow, 32768);
+  assert.equal(result.models[0].contextWindow, 1000000);
   status = 500; time++;
   await assert.rejects(client.get({ ...args, force: true }), /HTTP 500/);
 });

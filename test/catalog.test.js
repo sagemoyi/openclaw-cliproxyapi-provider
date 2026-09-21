@@ -17,11 +17,12 @@ test("rich metadata uses default context, not maximum possible context, and keep
   assert.equal(m.params.cpa.maxContextWindow, 128000); assert.equal(m.api, "openai-responses");
   assert.deepEqual(m.compat.supportedReasoningEfforts, ["low", "high"]);
 });
-test("empty effort list is authoritative; unknown models get conservative defaults", () => {
+test("empty effort list is authoritative; unknown models get maximal defaults", () => {
   assert.equal(projectModel(basic(), rich("test-model", [])).reasoning, false);
   const m = projectModel(basic());
-  assert.equal(m.contextWindow, 32768); assert.equal(m.maxTokens, 4096); assert.equal(m.reasoning, false);
-  assert.deepEqual(m.input, ["text"]);
+  assert.equal(m.contextWindow, 1000000); assert.equal(m.maxTokens, 65535); assert.equal(m.reasoning, true);
+  assert.deepEqual(m.compat.supportedReasoningEfforts, ["none", "low", "medium", "high", "xhigh", "max"]);
+  assert.deepEqual(m.input, ["text", "image"]);
 });
 test("CPA native metadata corrects template-inherited reasoning without replacing a changed live contract", () => {
   for (const id of ["kimi-k2", "grok-4.20-0309-non-reasoning"]) {
@@ -52,7 +53,7 @@ test("invalid rows fail the snapshot instead of silently causing model deletions
 });
 test("invalid token limits do not escape to the runtime", () => {
   const m = projectModel(basic(), { ...rich(), context_window: -1, max_tokens: Infinity });
-  assert.equal(m.contextWindow, 32768); assert.equal(m.maxTokens, 4096);
+  assert.equal(m.contextWindow, 1000000); assert.equal(m.maxTokens, 65535);
 });
 function fixture() {
   let time = 1000, calls = 0, failure, models = ["a"], levels = ["low", "high"];

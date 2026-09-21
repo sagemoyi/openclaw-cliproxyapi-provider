@@ -7,6 +7,8 @@ const ZERO_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 export const EFFORTS = ["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra", "auto"];
 const BUDGETS = { minimal: 512, low: 1024, medium: 8192, high: 24576, xhigh: 32768, max: 128000 };
 const TEMPLATE_EFFORTS = ["low", "medium", "high", "xhigh"];
+// Undeclared capabilities get the fullest profile: off, low, medium, high, xhigh, max.
+const FALLBACK_EFFORTS = ["none", "low", "medium", "high", "xhigh", "max"];
 const positive = (n) => Number.isSafeInteger(n) && n > 0 ? n : undefined;
 const record = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
 const strings = (x) => Array.isArray(x) ? [...new Set(x.filter((s) => typeof s === "string").map((s) => s.trim().toLowerCase()).filter(Boolean))] : [];
@@ -59,7 +61,7 @@ export function projectModel(basic, rich, { useBundledMetadata = true } = {}) {
   if (String(rich?.visibility ?? "").trim().toLowerCase() === "hide" || native?.type === "openai-image" ||
       (useBundledMetadata && SNAPSHOT.nonTextModelIds?.includes(id))) return null;
   const warnings = [];
-  let source = rich ? "cpa-live" : native ? "cpa-bundled" : "conservative-default";
+  let source = rich ? "cpa-live" : native ? "cpa-bundled" : "optimistic-default";
   let efforts = Array.isArray(rich?.supported_reasoning_levels)
     ? [...new Set(rich.supported_reasoning_levels.map((x) => typeof x === "string" ? x : x?.effort)
       .filter((x) => typeof x === "string").map((x) => x.trim().toLowerCase()).filter((x) => EFFORTS.includes(x)))]
@@ -80,19 +82,21 @@ export function projectModel(basic, rich, { useBundledMetadata = true } = {}) {
     source = "cpa-live+bundled";
   }
   if (efforts === undefined) {
-    efforts = [];
-    warnings.push("Reasoning controls unknown; no effort will be injected");
+    efforts = [...FALLBACK_EFFORTS];
+    warnings.push("Reasoning controls unknown; assuming the full effort ladder (off through max)");
   }
   if (!native && rich) warnings.push("CPA metadata may include synthesized template defaults; native provenance is not exposed");
   if (native?.thinking?.levels && efforts.some((effort) => !native.thinking.levels.includes(effort))) {
     warnings.push("Live advertised reasoning levels differ from the bundled CPA request-validation metadata; advertised controls may be rejected by the server");
   }
   if (efforts.includes("ultra")) warnings.push("CPA advertises ultra, which may be rejected by its request validator; logical /think ultra maps to max, not raw ultra");
-  const contextWindow = positive(rich?.context_window) ?? native?.contextWindow ?? 32768;
-  const maxTokens = Math.min(positive(rich?.max_tokens) ?? native?.maxTokens ?? 4096, contextWindow);
-  if (!positive(rich?.max_tokens) && !native?.maxTokens) warnings.push("Output limit unknown; conservative 4096-token fallback");
-  if (!positive(rich?.context_window) && !native?.contextWindow) warnings.push("Context limit unknown; conservative 32768-token fallback");
-  const input = strings(rich?.input_modalities ?? native?.input).filter((x) => ["text", "image"].includes(x));
+  const contextWindow = positive(rich?.context_window) ?? native?.contextWindow ?? 1000000;
+  const maxTokens = Math.min(positive(rich?.max_tokens) ?? native?.maxTokens ?? 65535, contextWindow);
+  if (!positive(rich?.max_tokens) && !native?.maxTokens) warnings.push("Output limit unknown; assuming 65535-token output limit");
+  if (!positive(rich?.context_window) && !native?.contextWindow) warnings.push("Context limit unknown; assuming 1000000-token context window");
+  const declaredInput = rich?.input_modalities ?? native?.input;
+  const input = declaredInput === undefined ? ["text", "image"] : strings(declaredInput).filter((x) => ["text", "image"].includes(x));
+  if (declaredInput === undefined) warnings.push("Input modalities unknown; assuming text and image input");
   if (!input.includes("text")) input.unshift("text");
   // The ordinary list carries ownership; CPA's rich projection omits it. Aliases remain literal.
   const api = native?.type === "codex" || basic.owned_by === "openai" ? "openai-responses" : "openai-completions";
@@ -216,10 +220,10 @@ export class CatalogClient {
           if (rows.length && rows.every((r) => idOf(r, "id") && !r.slug &&
             !["supported_reasoning_levels", "default_reasoning_level", "context_window", "max_context_window",
               "max_tokens", "input_modalities", "visibility", "display_name", "name"].some((key) => Object.hasOwn(r, key)))) {
-            this.warn("CPA has no rich catalog; using exact bundled metadata and conservative defaults");
+            this.warn("CPA has no rich catalog; using exact bundled metadata and maximal defaults");
           } else rich = rows;
         } else if ([404, 405].includes(results[1].reason?.status)) {
-          this.warn("CPA rich catalog unavailable; using exact bundled metadata and conservative defaults");
+          this.warn("CPA rich catalog unavailable; using exact bundled metadata and maximal defaults");
         } else throw results[1].reason;
         const models = projectCatalog(basic, rich, this);
         entry.at = this.now();

@@ -47,7 +47,7 @@ openclaw plugins install --link .
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.3.tgz
 ```
 
 如果启用了 `plugins.allow`，请将 `cliproxyapi` 加入现有列表，不要替换其他已允许的插件。
@@ -224,14 +224,14 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 
 | 能力 | 处理方式 |
 | --- | --- |
-| 上下文长度 | 使用 `context_window`；缺失时使用精确 ID 后备数据，再回退到 32768 |
-| 输出限制 | 使用 `max_tokens`；缺失时使用后备数据，再回退到 4096；不超过上下文长度 |
-| 输入模态 | 注册 text/image 输入能力 |
+| 上下文长度 | 使用 `context_window`；缺失时使用精确 ID 后备数据，再回退到 1,000,000 |
+| 输出限制 | 使用 `max_tokens`；缺失时使用后备数据，再回退到 65,535；不超过上下文长度 |
+| 输入模态 | 注册声明的 text/image 输入能力；未声明时默认 text+image |
 | Reasoning | 解析字符串或对象形式的档位，生成 OpenClaw thinking profile |
 | 隐藏模型 | 排除 `visibility: hide` 和已知图像／视频生成模型 |
 | 成本 | 默认 0 代表未知，不代表免费；可使用标准 cost 配置覆盖 |
 
-`max_context_window` 仅保留作诊断，不自动启用更大的上下文。未知 alias 不按名称猜测其底层模型；元数据不完整时使用保守值并输出告警。
+`max_context_window` 仅保留作诊断，不自动启用更大的上下文。未知 alias 不按名称猜测其底层模型；元数据不完整时使用最全最大的默认值——reasoning 提供 off/low/medium/high/xhigh/max 全部档位、上下文 1,000,000、输出 65,535、输入 text+image——并输出告警。
 
 常规 reasoning 档位根据模型声明提供。`none` 对应 OpenClaw 的 `off`，`auto` 对应 `adaptive`。不支持关闭思考的模型不会宣告 `off`。已有会话的档位不再受支持时，请求适配会选用支持的较低档位或默认档位。
 

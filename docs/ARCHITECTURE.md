@@ -46,7 +46,7 @@ Discovery uses `fetchLiveProviderModelRows`. Inference uses the host's standard 
 
 ## Capability projection
 
-Live fields take precedence, followed by bundled metadata and conservative defaults. Context and output limits must be positive safe integers; output is capped at context size.
+Live fields take precedence, followed by bundled metadata and maximal defaults (full reasoning ladder, 1,000,000-token context, 65,535-token output, text+image input). Context and output limits must be positive safe integers; output is capped at context size.
 
 Bundled metadata also addresses two known gaps:
 

@@ -7,7 +7,7 @@ test("built-in image/video models never appear as chat even on old CPA endpoints
 });
 test("exact IDs that collide with JS prototype properties remain ordinary unknown models", () => {
   assert.equal(projectModel({ id: "constructor" }).id, "constructor");
-  assert.equal(projectModel({ id: "__proto__" }).reasoning, false);
+  assert.equal(projectModel({ id: "__proto__" }).reasoning, true);
 });
 test("reasoning downgrade compares strengths independently of upstream array order", () => {
   assert.equal(selectEffort({ reasoning: true, compat: { supportedReasoningEfforts: ["high", "low"] } }, "max"), "high");

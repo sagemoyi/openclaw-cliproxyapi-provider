@@ -47,7 +47,7 @@ Alternatively, create an installable package:
 
 ```bash
 npm pack
-openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.2.tgz
+openclaw plugins install ./sagemoyi-openclaw-cliproxyapi-provider-0.1.3.tgz
 ```
 
 If you use `plugins.allow`, add `cliproxyapi` to the existing list without replacing other allowed plugins.
@@ -224,14 +224,14 @@ The ordinary CPA catalog defines availability. The rich catalog supplies capabil
 
 | Capability | Mapping |
 | --- | --- |
-| Context window | `context_window`, then exact-ID metadata, then 32768 |
-| Output limit | `max_tokens`, then bundled metadata, then 4096; capped at the context window |
-| Input modalities | Text/image input capabilities |
+| Context window | `context_window`, then exact-ID metadata, then 1,000,000 |
+| Output limit | `max_tokens`, then bundled metadata, then 65,535; capped at the context window |
+| Input modalities | Declared text/image capabilities; text+image when undeclared |
 | Reasoning | String or object effort entries mapped to OpenClaw thinking profiles |
 | Hidden models | Skip `visibility: hide` and known image/video generation models |
 | Cost | Zero is an unknown placeholder, not free usage; use standard cost overrides if needed |
 
-`max_context_window` is retained for diagnostics, not automatically enabled. Unknown aliases are not resolved by guessing model names. Incomplete metadata produces conservative defaults and warnings.
+`max_context_window` is retained for diagnostics, not automatically enabled. Unknown aliases are not resolved by guessing model names. When metadata is incomplete, capabilities default to the fullest profile — reasoning off/low/medium/high/xhigh/max, 1,000,000-token context, 65,535-token output, text+image input — with warnings.
 
 Supported reasoning levels are model-specific. `none` maps to OpenClaw `off`; `auto` maps to `adaptive`. Models that cannot disable thinking do not advertise `off`. If an existing session's level becomes unsupported, request adaptation selects a supported lower level or the model default.
 
