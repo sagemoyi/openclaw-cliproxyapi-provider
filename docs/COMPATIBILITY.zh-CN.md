@@ -14,6 +14,7 @@
 | `2026.9.1` | 通过 | 通过 | 通过，无需重启 |
 | `2026.9.2` | 通过 | 通过 | 通过，无需重启 |
 | `2026.9.3` | 通过；另复现宿主隔离检查拒绝 | 通过 | 通过，无需重启 |
+| `2026.9.5` | 未复测 | 通过 | 通过，无需重启 |
 
 这些结果来自本地模拟 CPA，不代表上述版本在原报告的真实端点上推理成功。
 
@@ -28,7 +29,7 @@ npm run test:host
 npm run test:gateway
 ```
 
-分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。
+分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。
 
 - 69 项纯逻辑／契约测试通过。
 - 真实 SDK 的 Chat Completions 传输、CLI 安装、catalog、sync 及目录新增／删除通过。
@@ -51,6 +52,12 @@ npm run test:gateway
 本次 `readOnly: false` 路径中，August 宿主的 `activateStandalonePreparedModelRuntime()` 创建 standalone owner；该 owner 持续有效，使目录 worker 留存。`2026.9.3` 增加了 `captureModelRuntimeLifetime()` / `registerPreparedModelRuntimeClose(closeModelRuntime)` 与 CLI 收尾清理：关闭 runtime 会清除 owner，worker 检测到代际失效后停止并终止线程。新版另有 lease 作用域改进，但它不是本次已复现路径的主要原因。
 
 需要可靠的一次性 CLI sync 时，建议使用本轮验证通过的 `2026.9.3`。不通过 `process.exit()` 强制退出或私有 SDK 导入绕过宿主生命周期。`2026.9.1` / `2026.9.2` 的精确版本验证结果见上表。
+
+## 2026.9.5 适配记录
+
+- `plugins install --link` 在运行中的 CLI 自身位于被链接包内部时（例如经 `npm run` 调用仓库内 `node_modules/.bin/openclaw`），会被新增的注册表所有权检查拒绝：`package owner "cliproxyapi" has conflicting child rows`。集成测试现在解析 PATH 上首个 realpath 在仓库外的 `openclaw` 再调用；全局安装的 CLI 不受此影响。
+- 无 Gateway 运行时，`models list` 只读本地已发布缓存，不再主动实时发现；需 `models list --refresh` 触发实时发现。宿主集成测试按 `--help` 输出探测该标志，旧宿主保持原行为。Gateway 运行时的 `models.list` RPC 与插件服务的 prepared 发布路径不变，`2026.9.5` 验证通过。
+- 随包元数据刷新到 CPA `v7.3.10`（上游 commit `a5ab6952`）：新增 kimi-k2.8、muse-spark 系列等 7 个模型 ID；kimi-k3 / kimi-k3-256k 的 `zero_allowed` 变为 `true`；新增 3 个 gpt-image 非文本 ID 排除。上游丰富目录字段语法（`slug`、`supported_reasoning_levels`、`default_reasoning_level`、`context_window`、`max_context_window`、`max_tokens`、`input_modalities`、`visibility`、`display_name`）未变。
 
 ## 登录与隔离环境
 

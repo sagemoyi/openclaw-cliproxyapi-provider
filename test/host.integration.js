@@ -11,7 +11,7 @@ import { promisify } from "node:util";
 import { fetchLiveProviderModelRows } from "openclaw/plugin-sdk/provider-catalog-live-runtime";
 import { streamSimple } from "openclaw/plugin-sdk/llm";
 import { createCpaProvider } from "../src/provider.js";
-import { installHostPlugin } from "./install-host-plugin.js";
+import { installHostPlugin, resolveHostCli } from "./install-host-plugin.js";
 const exec = promisify(execFile);
 
 test("real SDK fetch + streaming transport honor string efforts, adaptive, non-reasoning and tool schemas", async (t) => {
@@ -145,7 +145,7 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
-  const cli = async (...args) => exec("openclaw", args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 });
+  const cli = async (...args) => exec(resolveHostCli(), args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 });
   await installHostPlugin(cli);
   const installedConfig = await readFile(configPath, "utf8");
   const listing = await cli("plugins", "list", "--json");
@@ -159,14 +159,16 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   assert.ok(!JSON.stringify(initial).includes(config.models.providers.cliproxyapi.baseUrl));
   const firstSync = JSON.parse((await cli("cpa", "sync")).stdout);
   assert.equal(firstSync.synced, true);
-  const firstList = await cli("models", "list", "--all", "--provider", "cliproxyapi", "--json");
+  // 2026.9.5 lists only the local cache without a Gateway; --refresh runs live discovery.
+  const refresh = (await cli("models", "list", "--help")).stdout.includes("--refresh") ? ["--refresh"] : [];
+  const firstList = await cli("models", "list", "--all", "--provider", "cliproxyapi", ...refresh, "--json");
   t.diagnostic(`first models list: ${firstList.stdout.slice(0, 1200)}`);
   assert.ok(firstList.stdout.includes("cliproxyapi/model-a"));
   ids = ["model-b", "model-c"];
   const updated = JSON.parse((await cli("cpa", "catalog")).stdout);
   assert.deepEqual(updated.models.map((m) => m.id), ids);
   assert.equal(JSON.parse((await cli("cpa", "sync")).stdout).synced, true);
-  const models = await cli("models", "list", "--all", "--provider", "cliproxyapi", "--json");
+  const models = await cli("models", "list", "--all", "--provider", "cliproxyapi", ...refresh, "--json");
   assert.ok(models.stdout.includes("cliproxyapi/model-c"));
   assert.ok(!models.stdout.includes("cliproxyapi/model-a"));
   t.diagnostic(`models list: ${models.stdout.slice(0, 1000)}`);

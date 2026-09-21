@@ -10,7 +10,7 @@ import path from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { buildAuthModelAccessPatch } from "../src/auth.js";
-import { installHostPlugin } from "./install-host-plugin.js";
+import { installHostPlugin, resolveHostCli } from "./install-host-plugin.js";
 const exec = promisify(execFile);
 const runtime = await import("openclaw/plugin-sdk/agent-runtime");
 const prepared = typeof runtime.loadPreparedModelCatalog === "function";
@@ -47,11 +47,12 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
-  await installHostPlugin((...args) => exec("openclaw", args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 }));
+  const hostCli = resolveHostCli();
+  await installHostPlugin((...args) => exec(hostCli, args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 }));
   const installedConfig = await readFile(configPath, "utf8");
   let child, log = "";
   function start() {
-    child = spawn("openclaw", ["gateway", "run", "--port", String(port)], { env, stdio: ["ignore", "pipe", "pipe"] });
+    child = spawn(hostCli, ["gateway", "run", "--port", String(port)], { env, stdio: ["ignore", "pipe", "pipe"] });
     child.stdout.on("data", (b) => log = (log + b.toString()).slice(-20000));
     child.stderr.on("data", (b) => log = (log + b.toString()).slice(-20000));
   }
@@ -61,7 +62,7 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   }
   t.after(stop); start();
   const list = async () => {
-    const result = await exec("openclaw", ["gateway", "call", "models.list", "--url", `ws://127.0.0.1:${port}`, "--token", token, "--json"],
+    const result = await exec(hostCli, ["gateway", "call", "models.list", "--url", `ws://127.0.0.1:${port}`, "--token", token, "--json"],
       { env, timeout: 15000, maxBuffer: 4 * 1024 * 1024 });
     return JSON.parse(result.stdout).models.filter((m) => m.provider === "cliproxyapi");
   };
