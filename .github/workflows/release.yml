@@ -1,0 +1,116 @@
+name: Release
+
+# 发布流程（规范见 AGENTS.md「分支与发布」）：
+# - 日常开发在 dev 分支；合并到 main 且 package.json 版本号未发布过时，自动发版：
+#   CI 全量门禁 → 创建 git tag + GitHub Release（附 npm tarball）→ 发布到 ClawHub。
+# - 版本号未变化（tag 已存在）的 main 推送只跑 CI，不发版。
+# - workflow_dispatch 默认 dry-run 预览；手动选择 dry_run=false 用于失败恢复补发。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview the ClawHub publish without publishing (false = real publish, for recovery)
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  prepare:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      exists: ${{ steps.meta.outputs.exists }}
+      has_token: ${{ steps.meta.outputs.has_token }}
+      changelog: ${{ steps.meta.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Resolve version, tag state, changelog
+        id: meta
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          version="$(node -p 'require("./package.json").version')"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          if git rev-parse --verify --quiet "refs/tags/v${version}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::v${version} already released; CI-only run, skipping publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "${CLAWHUB_TOKEN:-}" ]; then
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CLAWHUB_TOKEN secret is not set; the ClawHub publish step will be skipped."
+          fi
+          prev="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          if [ -n "$prev" ]; then range="${prev}..HEAD"; else range="HEAD"; fi
+          {
+            echo 'changelog<<EOF'
+            git log --no-merges --pretty='- %s (%h)' ${range}
+            echo
+            echo "Full diff: https://github.com/${{ github.repository }}/compare/${prev:-HEAD}...v${version}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: prepare
+    if: github.event_name == 'push' && needs.prepare.outputs.exists == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+      - name: npm pack
+        run: npm pack
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          CHANGELOG: ${{ needs.prepare.outputs.changelog }}
+        run: |
+          set -euo pipefail
+          gh release create "v${VERSION}" ./*.tgz \
+            --title "v${VERSION}" \
+            --notes "${CHANGELOG}" \
+            --target ${{ github.sha }}
+
+  publish_clawhub:
+    needs: [prepare, release]
+    # push 路径：版本是新的且 GitHub Release 成功才真实发布；dispatch 路径用于预览/恢复
+    if: ${{ always() && needs.prepare.result == 'success' && (github.event_name == 'workflow_dispatch' || (needs.prepare.outputs.exists == 'false' && needs.prepare.outputs.has_token == 'true' && needs.release.result == 'success')) }}
+    # 固定到已审阅的 ClawHub reusable workflow 提交，保持发布行为可复现（与 OpenClaw 官方做法一致）
+    uses: openclaw/clawhub/.github/workflows/package-publish.yml@ff6c118c132ae89b5351739cc45fe9227ff1574e
+    with:
+      dry_run: ${{ github.event_name != 'push' }}
+      owner: sagemoyi
+      changelog: ${{ needs.prepare.outputs.changelog }}
+      wait_for_publication: true
+      publication_timeout_minutes: 40
+    secrets:
+      clawhub_token: ${{ secrets.CLAWHUB_TOKEN }}

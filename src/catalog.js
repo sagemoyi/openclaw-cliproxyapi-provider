@@ -90,10 +90,10 @@ export function projectModel(basic, rich, { useBundledMetadata = true } = {}) {
     warnings.push("Live advertised reasoning levels differ from the bundled CPA request-validation metadata; advertised controls may be rejected by the server");
   }
   if (efforts.includes("ultra")) warnings.push("CPA advertises ultra, which may be rejected by its request validator; logical /think ultra maps to max, not raw ultra");
-  const contextWindow = positive(rich?.context_window) ?? native?.contextWindow ?? 1000000;
+  const contextWindow = positive(rich?.context_window) ?? native?.contextWindow ?? 300000;
   const maxTokens = Math.min(positive(rich?.max_tokens) ?? native?.maxTokens ?? 65535, contextWindow);
   if (!positive(rich?.max_tokens) && !native?.maxTokens) warnings.push("Output limit unknown; assuming 65535-token output limit");
-  if (!positive(rich?.context_window) && !native?.contextWindow) warnings.push("Context limit unknown; assuming 1000000-token context window");
+  if (!positive(rich?.context_window) && !native?.contextWindow) warnings.push("Context limit unknown; assuming 300000-token context window");
   const declaredInput = rich?.input_modalities ?? native?.input;
   const input = declaredInput === undefined ? ["text", "image"] : strings(declaredInput).filter((x) => ["text", "image"].includes(x));
   if (declaredInput === undefined) warnings.push("Input modalities unknown; assuming text and image input");

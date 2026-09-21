@@ -74,7 +74,17 @@ scripts/dev.sh stop
 `plugins inspect` 中 `trust.reason: "origin-path"` 属正常：本地 link 安装不继承官方
 信任（官方文档明确此边界），本插件不依赖受信任状态，无功能影响。
 
-## 发布前验证（对齐官方流程，顺序执行）
+## 分支与发布（自动化）
+- **dev 分支**：日常开发与测试。CI（单元 + host/gateway 多版本矩阵）在每次 push / PR 自动运行。
+- **main 分支**：发布分支。推送（含合并 dev → main）触发 `.github/workflows/release.yml`：先跑完整 CI 门禁，再发版。**版本号即发布开关**：`package.json` 的 `version` 对应的 tag `v<version>` 已存在则只跑 CI 不发版；要发版，在合并的 PR 里 bump 版本号（semver）。
+- **发版动作（全自动）**：创建 tag `v<version>` + GitHub Release（附 npm tarball、自动生成 changelog）→ 调用官方 ClawHub reusable workflow 发布（默认等待安全检查通过，最长 40 分钟）。
+- **CLAWHUB_TOKEN**：发布凭据，已存入 GitHub repo secrets。轮换：本机 `clawhub login` 后执行 `clawhub token | gh secret set CLAWHUB_TOKEN`。
+- **预览与恢复**：Actions → Release → Run workflow。`dry_run=true`（默认）只做 ClawHub 预览不发布；`dry_run=false` 用于失败后的补发（GitHub Release 已建好但 ClawHub 未发布时）。ClawHub 拒绝重复版本，重复发布会失败属预期护栏。
+- **顺序约定**：ClawHub 发布在 GitHub Release 之后；若 ClawHub 成功而后续步骤失败，手工补 `git tag`/`gh release create` 即可，不要改版本号重发。
+- （可选加固）GitHub repo 设置里给 main 加分支保护：要求 PR + CI 通过。也可按官方文档升级为 OIDC trusted publishing（`clawhub package trusted-publisher set`），去掉长期 token。
+## 发布前验证（合并到 main 前的本地检查）
+
+以下检查与 release pipeline 中的 CI 门禁一致，合并 dev → main 前应在本地跑过：
 
 ```bash
 git diff --check
