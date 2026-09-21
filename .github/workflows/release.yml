@@ -17,8 +17,12 @@ on:
         type: boolean
         default: true
 
+# 顶层 permissions 是可复用工作流的权限上限：ClawHub 发布工作流要求 actions:read + id-token:write
+#（OIDC 验证 workflow 来源）。各 job 仍用自身 permissions 收窄。
 permissions:
   contents: read
+  actions: read
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -32,6 +36,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.meta.outputs.version }}
       exists: ${{ steps.meta.outputs.exists }}
