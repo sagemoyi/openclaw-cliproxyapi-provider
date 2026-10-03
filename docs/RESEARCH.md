@@ -69,28 +69,13 @@ HTTP 目录访问使用 `fetchLiveProviderModelRows`。推理请求继续走宿�
 
 ## 宿主目录发布
 
-### Legacy catalog API
+本版本只通过 `loadPreparedModelCatalog` 发布目录。插件传入真实配置，并设置 `readOnly:false`、`refreshFullCatalog:true`，由宿主刷新已发布的目录状态。只提供 `loadModelCatalog` 的旧宿主不受支持；安装为该宿主发布的插件版本。
 
-当宿主提供 `loadModelCatalog` 时，插件构造包含最新模型的临时配置视图，并调用 `useCache:false`。宿主负责合并、凭据处理、目录写锁及文件持久化；临时视图不会写回 OpenClaw 主配置。
+## 兼容性
 
-此路径主要面向默认 agent 的目录发布。其他 agent 继续使用宿主发现和请求前检查，不承诺所有既有会话同步热替换。
-
-部分版本另有 Gateway `models.list` 缓存，其失效机制不在公共 SDK 中。插件不通过私有 API、替换 RPC 或反复修改配置规避该边界；用户可能需要正常重启或配置重载。
-
-### Prepared catalog API
-
-当宿主提供 `loadPreparedModelCatalog` 时，插件传入真实配置，并设置 `readOnly:false`、`refreshFullCatalog:true`，由宿主刷新已发布的目录状态，不再构造 legacy 临时视图。
-
-该分支已完成源码与参数契约核对，尚未完成新版 Gateway 端到端验证。API 探测用于选择集成路径，不代表所有后续版本都已经验证。
-
-两条路径都会校验发现的模型是否完整发布，以及是否意外残留已删除模型。用户显式配置的模型不作为意外残留。
-
-## 兼容性基线
-
-| 组件 | 基线 | 验证范围 |
+| 组件 | 目标 | 验证范围 |
 | --- | --- | --- |
-| OpenClaw | `2026.7.1-2` | 真实 SDK、CLI 安装和隔离 Gateway 集成 |
-| OpenClaw prepared catalog | `2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5`、`2026.9.7` | 真实 SDK、CLI 和隔离 Gateway；通过公开 RPC 验证无需重启的目录更新 |
+| OpenClaw | 仅 `2026.9.7` | 真实 SDK、CLI 安装和隔离 Gateway；通过公开 RPC 验证无需重启的目录更新 |
 | CPA | `v7.2.149` 与下列固定源码 revision | 目录及 thinking 逻辑审查、代表性请求验证 |
 | 官方 pi 插件 | `1.4.15` | 目录解析、映射、缓存与刷新实现参考 |
 

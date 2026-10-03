@@ -22,7 +22,7 @@ Pure tests use Node.js's built-in runner and need no additional dependencies. Ho
 Keep the CLI and peer SDK on the same version. For example, install the integration baseline as a development dependency without changing package metadata:
 
 ```bash
-npm install --no-save --package-lock=false openclaw@2026.7.1-2
+npm install --no-save --package-lock=false openclaw@2026.9.7
 ```
 
 Do not embed global installation paths, personal credentials, or deployment configuration in source or fixtures.

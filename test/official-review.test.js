@@ -67,7 +67,7 @@ test("rich-endpoint auth failure invalidates cached data even when plain endpoin
 });
 
 test("publication detects retained removals including an empty new catalog, but permits explicit user rows", async () => {
-  const runtime = { loadModelCatalog: async () => [{ provider: "cliproxyapi", id: "a" }, { provider: "cliproxyapi", id: "removed" }] };
+  const runtime = { loadPreparedModelCatalog: async () => [{ provider: "cliproxyapi", id: "a" }, { provider: "cliproxyapi", id: "removed" }] };
   await assert.rejects(materializeCatalog({}, snapshot, runtime), /retained removed/);
   await assert.rejects(materializeCatalog({}, { ...snapshot, models: [] }, runtime), /retained removed/);
   const config = { models: { providers: { cliproxyapi: { models: [{ id: "removed" }] } } } };

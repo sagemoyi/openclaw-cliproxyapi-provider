@@ -18,7 +18,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22.16.0'
+          node-version: '24.16.0'
       - run: npm run check
       - run: npm test
 
@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openclaw: ['2026.7.1-2', '2026.9.1', '2026.9.2', '2026.9.3', '2026.9.5', '2026.9.7']
+        openclaw: ['2026.9.7']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -36,8 +36,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24.16.0'
-      # Exact peer versions: these jobs are compatibility gates, not a promise
-      # that a future OpenClaw plugin API is compatible.
+      # This release targets this exact OpenClaw version. Older hosts install the
+      # plugin release built for that host; a newer host is not assumed compatible.
       - run: npm install --no-save --package-lock=false openclaw@${{ matrix.openclaw }}
       - run: npm run check
       - run: npm test
