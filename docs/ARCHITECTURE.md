@@ -90,7 +90,7 @@ Both paths verify complete publication and unexpected retained deletions. Explic
 | Component | Baseline | Validation |
 | --- | --- | --- |
 | OpenClaw | `2026.7.1-2` | Real SDK, CLI installation, isolated Gateway integration |
-| OpenClaw prepared catalog | `2026.9.1`, `2026.9.2`, `2026.9.3` | Real SDK, CLI, and isolated Gateway; public RPC verifies catalog updates without restarting |
+| OpenClaw prepared catalog | `2026.9.1`, `2026.9.2`, `2026.9.3`, `2026.9.5`, `2026.9.7` | Real SDK, CLI, and isolated Gateway; public RPC verifies catalog updates without restarting |
 | CPA | `v7.2.149` and pinned source below | Catalog/thinking review and representative request validation |
 | Official pi plugin | `1.4.15` | Reference for parsing, mapping, caching, and refresh coordination |
 

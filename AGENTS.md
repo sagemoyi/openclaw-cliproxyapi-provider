@@ -108,7 +108,7 @@ scripts/dev.sh stop             # 验证完毕关停
 
 - 最低兼容基线：`2026.7.1-2`（`npm install --no-save --package-lock=false openclaw@2026.7.1-2`
   后跑集成套件）。
-- dev 实例跟随本机生产宿主版本（当前 `2026.9.3`），保证开发验证贴近真实环境。
+- dev 实例跟随本机生产宿主版本（当前 `2026.9.7`），保证开发验证贴近真实环境。`2026.9.7` 起宿主要求 Node.js `>=24.16.0 <25 || >=26.1.0`；本插件代码仍可在 Node `>=22.16.0` 上运行，以继续覆盖 `2026.7.1-2` 基线。
 - 关注 [openclaw/openclaw releases](https://github.com/openclaw/openclaw/releases)
   的 beta tag（形如 `v2026.x.N-beta.1`），出现后尽快对 beta 验证 —— 距稳定版通常只有
   几小时。
