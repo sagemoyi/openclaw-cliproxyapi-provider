@@ -139,7 +139,7 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const stateDir = await mkdtemp(path.join(tmpdir(), "cpa-openclaw-test-"));
   const configPath = path.join(stateDir, "openclaw.json");
   const config = { models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
-    plugins: { allow: ["cliproxyapi"], load: { paths: [process.cwd()] }, entries: { cliproxyapi: { enabled: true } } },
+    plugins: { allow: ["cliproxyapi"], entries: { cliproxyapi: { enabled: true } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), models: { "cliproxyapi/*": {} } } } };
   await writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,

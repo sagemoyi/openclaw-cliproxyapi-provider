@@ -35,7 +35,7 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   const token = "isolated-gateway-test-token";
   const config = { gateway: { mode: "local", port, bind: "loopback", auth: { mode: "token", token } },
     models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
-    plugins: { allow: ["cliproxyapi"], load: { paths: [process.cwd()] }, entries: { cliproxyapi: { enabled: true, config: { refreshSeconds: 10 } } } },
+    plugins: { allow: ["cliproxyapi"], entries: { cliproxyapi: { enabled: true, config: { refreshSeconds: 10 } } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), model: { primary: "cliproxyapi/model-b" }, models: { "cliproxyapi/*": {} } } } };
   // Reproduce login on a modern host with a pre-existing policy that hides CPA.
   if (prepared) {
