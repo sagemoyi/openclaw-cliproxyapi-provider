@@ -17,7 +17,7 @@ Provider ID: `cliproxyapi`. Built on the public OpenClaw plugin SDK; no OpenClaw
 
 ## Requirements
 
-- Node.js 22.16.0 or later, also satisfying your OpenClaw version's runtime requirements.
+- Node.js 22.16.0 or later, also satisfying your OpenClaw version's runtime requirements. OpenClaw `2026.9.7` requires Node.js `>=24.16.0 <25` or `>=26.1.0`.
 - OpenClaw 2026.7.1-2 or later. See [Architecture and compatibility](docs/ARCHITECTURE.md) for validation boundaries. See the [issue #1 verification record (Chinese)](docs/COMPATIBILITY.zh-CN.md) for the cross-version investigation.
 - A reachable CPA HTTP(S) endpoint and a model-access API key. No management key is required.
 
@@ -274,7 +274,7 @@ OpenClaw versions with `agents.defaults.modelPolicy.allow` use that explicit pol
 
 ### Sync reports success but does not exit
 
-OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. For one-shot sync commands that exit normally, use the verified `2026.9.3` host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md). If either August host must be retained, see the separate [host patches and rollback instructions](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw); plugin updates do not apply these patches automatically.
+OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. For one-shot sync commands that exit normally, use a verified `2026.9.3` or later host (`2026.9.7` included). See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md). If either August host must be retained, see the separate [host patches and rollback instructions](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw); plugin updates do not apply these patches automatically.
 
 ### Provider or login method is missing
 

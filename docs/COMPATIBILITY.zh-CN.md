@@ -15,6 +15,7 @@
 | `2026.9.2` | 通过 | 通过 | 通过，无需重启 |
 | `2026.9.3` | 通过；另复现宿主隔离检查拒绝 | 通过 | 通过，无需重启 |
 | `2026.9.5` | 未复测 | 通过 | 通过，无需重启 |
+| `2026.9.7` | 未复测 | 通过 | 通过，无需重启 |
 
 这些结果来自本地模拟 CPA，不代表上述版本在原报告的真实端点上推理成功。
 
@@ -29,7 +30,7 @@ npm run test:host
 npm run test:gateway
 ```
 
-分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。
+分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5`、`2026.9.7` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。`2026.9.7` 宿主要求 Node.js `>=24.16.0 <25 || >=26.1.0`；插件自身仍声明 Node `>=22.16.0`，以便在 `2026.7.1-2` 基线上运行。
 
 - 69 项纯逻辑／契约测试通过。
 - 真实 SDK 的 Chat Completions 传输、CLI 安装、catalog、sync 及目录新增／删除通过。
@@ -59,6 +60,12 @@ npm run test:gateway
 - 无 Gateway 运行时，`models list` 只读本地已发布缓存，不再主动实时发现；需 `models list --refresh` 触发实时发现。宿主集成测试按 `--help` 输出探测该标志，旧宿主保持原行为。Gateway 运行时的 `models.list` RPC 与插件服务的 prepared 发布路径不变，`2026.9.5` 验证通过。
 - 随包元数据刷新到 CPA `v7.3.10`（上游 commit `a5ab6952`）：新增 kimi-k2.8、muse-spark 系列等 7 个模型 ID；kimi-k3 / kimi-k3-256k 的 `zero_allowed` 变为 `true`；新增 3 个 gpt-image 非文本 ID 排除。上游丰富目录字段语法（`slug`、`supported_reasoning_levels`、`default_reasoning_level`、`context_window`、`max_context_window`、`max_tokens`、`input_modalities`、`visibility`、`display_name`）未变。
 
+## 2026.9.7 适配记录
+
+- 插件使用的公开 SDK 子路径在 `2026.9.7` 仍可导入：`plugin-entry`、`provider-catalog-live-runtime`、`provider-auth`、`provider-auth-runtime`、`provider-model-shared`、`agent-runtime`、`llm`。`loadPreparedModelCatalog` 的 prepared 发布路径未变。
+- 宿主集成（CLI 安装、`cpa catalog`/`cpa sync`、`models list --refresh` 增删）与隔离 Gateway 的 `models.list` RPC 在 `2026.9.7` 通过，无需重启。PTY 登录本轮未复测。
+- `2026.9.7` 的 `engines.node` 为 `>=24.16.0 <25 || >=26.1.0`。插件 `engines.node` 仍为 `>=22.16.0`，最低宿主基线仍是 `2026.7.1-2`；在 9.7 上运行必须使用宿主要求的 Node。
+- 构建元数据 `openclaw.build` 记为本次验证的宿主 `2026.9.7`。运行时兼容范围仍由 `peerDependencies` 与 `compat.pluginApi` 的 `>=2026.7.1-2` 表示。
 ## 登录与隔离环境
 
 在本机 `2026.9.3` 的实际 PTY 测试中，登录在显示端点和密钥提示之前退出。宿主报告 CLI 与已安装 Gateway 服务的状态目录及配置路径不同，并明确说明未写入凭据或配置。这是宿主的状态存储一致性检查，插件认证回调尚未执行。

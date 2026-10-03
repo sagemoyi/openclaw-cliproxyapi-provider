@@ -152,3 +152,20 @@ test("duplicate starts do not create extra loops and a stopped callback cannot r
   assert.equal(scheduled.length, 2);
   await service.stop();
 });
+
+test("sync failure warning carries the underlying error detail", async () => {
+  const warnings = [];
+  let failure = new TypeError("fetch failed", { cause: new Error("connect ECONNREFUSED 127.0.0.1:18317") });
+  const service = createCatalogService({ intervalMs: 10,
+    sync: async () => { throw failure; },
+    schedule: () => ({}), cancel() {} });
+  const ctx = { logger: { warn: (m) => warnings.push(m) } };
+  await service.start(ctx);
+  await service.stop();
+  failure = "plain string failure";
+  await service.start(ctx);
+  await service.stop();
+  assert.equal(warnings.length, 2);
+  assert.match(warnings[0], /CPA catalog sync failed; retrying on the next interval: fetch failed \(cause: connect ECONNREFUSED 127\.0\.0\.1:18317\)/);
+  assert.match(warnings[1], /CPA catalog sync failed; retrying on the next interval: plain string failure/);
+});

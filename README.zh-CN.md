@@ -17,7 +17,7 @@
 
 ## 要求
 
-- Node.js 22.16.0 或更高版本，同时满足所使用 OpenClaw 版本的运行要求。
+- Node.js 22.16.0 或更高版本，同时满足所使用 OpenClaw 版本的运行要求。OpenClaw `2026.9.7` 要求 Node.js `>=24.16.0 <25` 或 `>=26.1.0`。
 - OpenClaw 2026.7.1-2 或更高版本；SDK 兼容范围和验证边界见 [架构与兼容性](docs/RESEARCH.md)，跨版本反馈复核见 [issue #1 测试记录](docs/COMPATIBILITY.zh-CN.md)。
 - 一个可访问的 CPA HTTP(S) 端点，以及具有模型访问权限的 API key。无需管理密钥。
 
@@ -274,7 +274,7 @@ Gateway 服务启动时执行发现，之后默认每次同步结束后等待 60
 
 ### sync 已输出成功，但进程不退出
 
-在 OpenClaw `2026.8.1` / `2026.8.2` 上已复现 prepared 目录发布完成后宿主工作线程仍保持进程存活。需要正常退出的一次性同步命令时，建议使用已验证的 `2026.9.3`。详见 [兼容性复核](docs/COMPATIBILITY.zh-CN.md)。必须保留这两个旧版宿主时，可参考独立的 [宿主补丁与回滚说明](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw)；插件升级不会自动应用该补丁。
+在 OpenClaw `2026.8.1` / `2026.8.2` 上已复现 prepared 目录发布完成后宿主工作线程仍保持进程存活。需要正常退出的一次性同步命令时，建议使用已验证的 `2026.9.3` 或更新版本（含 `2026.9.7`）。详见 [兼容性复核](docs/COMPATIBILITY.zh-CN.md)。必须保留这两个旧版宿主时，可参考独立的 [宿主补丁与回滚说明](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw)；插件升级不会自动应用该补丁。
 
 ### 找不到 provider 或登录入口
 

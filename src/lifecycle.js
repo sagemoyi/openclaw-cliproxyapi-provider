@@ -1,5 +1,13 @@
 import { createHash } from "node:crypto";
 
+/** Readable one-line detail for sync failures, including fetch-style causes. */
+function describeError(error) {
+  if (error instanceof Error) {
+    const cause = error.cause instanceof Error ? ` (cause: ${error.cause.message})` : "";
+    return `${error.message}${cause}` || String(error);
+  }
+  return String(error);
+}
 /** Serialize discovery + publication, so an older write cannot finish last. */
 export function createCatalogSynchronizer({ discover, publish, config }) {
   let tail = Promise.resolve();
@@ -38,8 +46,8 @@ export function createCatalogService({ sync, intervalMs, schedule = setTimeout, 
       const mine = ++generation;
       const tick = () => {
         if (!active || mine !== generation) return Promise.resolve();
-        pending = Promise.resolve().then(() => sync(ctx)).catch(() => {
-          ctx.logger.warn("CPA catalog sync failed; retrying on the next interval");
+        pending = Promise.resolve().then(() => sync(ctx)).catch((error) => {
+          ctx.logger.warn(`CPA catalog sync failed; retrying on the next interval: ${describeError(error)}`);
         }).finally(() => {
           if (active && mine === generation) {
             timer = schedule(tick, intervalMs);
