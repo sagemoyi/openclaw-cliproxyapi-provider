@@ -65,8 +65,8 @@ npm run test:gateway
 - 插件使用的公开 SDK 子路径在 `2026.9.7` 仍可导入：`plugin-entry`、`provider-catalog-live-runtime`、`provider-auth`、`provider-auth-runtime`、`provider-model-shared`、`agent-runtime`、`llm`。`loadPreparedModelCatalog` 的 prepared 发布路径未变。
 - 宿主集成（CLI 安装、`cpa catalog`/`cpa sync`、`models list --refresh` 增删）与隔离 Gateway 的 `models.list` RPC 在 `2026.9.7` 通过，无需重启。PTY 登录本轮未复测。
 - `2026.9.5` / `2026.9.7` 在 `--link` 指向含 `node_modules/openclaw` 的检出目录时，会把宿主包当成冲突的子插件并拒绝安装。集成测试改为 `npm pack` 后安装归档，并使用检出目录内的 peer CLI，使 CLI 与被测 SDK 为同一版本。`plugins.load.paths` 不再指向检出目录，避免源码候选盖住已安装的包记录。
-- `2026.9.7` 的 `engines.node` 为 `>=24.16.0 <25 || >=26.1.0`。插件 `engines.node` 仍为 `>=22.16.0`，最低宿主基线仍是 `2026.7.1-2`；在 9.7 上运行必须使用宿主要求的 Node。
-- 构建元数据 `openclaw.build` 记为本次验证的宿主 `2026.9.7`。运行时兼容范围仍由 `peerDependencies` 与 `compat.pluginApi` 的 `>=2026.7.1-2` 表示。
+- `2026.9.7` 与本插件的 `engines.node` 都是 `>=24.16.0 <25 || >=26.1.0`。
+- 从 `0.1.4` 起，插件版本只声明并验证 OpenClaw `2026.9.7`：`peerDependencies`、`compat.pluginApi`、`minGatewayVersion` 与 `openclaw.build` 都是该版本。目录发布只走 `loadPreparedModelCatalog`，不再保留 `loadModelCatalog` 兼容路径。更早的宿主继续使用 `v0.1.3` 及以前的插件版本。
 ## 登录与隔离环境
 
 在本机 `2026.9.3` 的实际 PTY 测试中，登录在显示端点和密钥提示之前退出。宿主报告 CLI 与已安装 Gateway 服务的状态目录及配置路径不同，并明确说明未写入凭据或配置。这是宿主的状态存储一致性检查，插件认证回调尚未执行。

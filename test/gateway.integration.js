@@ -1,6 +1,5 @@
 import "./isolated-host-env.js";
-// Requires an installed OpenClaw peer. Prepared hosts are checked through public RPC;
-// the legacy sidecar assertion remains isolated to hosts without prepared catalogs.
+// Requires the targeted OpenClaw peer. Catalog changes are checked through public RPC.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -12,8 +11,6 @@ import { promisify } from "node:util";
 import { buildAuthModelAccessPatch } from "../src/auth.js";
 import { installHostPlugin, resolveHostCli } from "./install-host-plugin.js";
 const exec = promisify(execFile);
-const runtime = await import("openclaw/plugin-sdk/agent-runtime");
-const prepared = typeof runtime.loadPreparedModelCatalog === "function";
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 test("Gateway publishes additions, removals, capabilities and empty catalogs on the host-owned path", { timeout: 150000 }, async (t) => {
@@ -37,12 +34,10 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
     models: { providers: { cliproxyapi: { baseUrl: `http://127.0.0.1:${server.address().port}/v1`, apiKey: "test-key", models: [] } } },
     plugins: { allow: ["cliproxyapi"], entries: { cliproxyapi: { enabled: true, config: { refreshSeconds: 10 } } } },
     agents: { defaults: { workspace: path.join(stateDir, "workspace"), model: { primary: "cliproxyapi/model-b" }, models: { "cliproxyapi/*": {} } } } };
-  // Reproduce login on a modern host with a pre-existing policy that hides CPA.
-  if (prepared) {
-    config.agents.defaults.modelPolicy = { allow: ["unrelated/model"] };
-    Object.assign(config.agents.defaults, buildAuthModelAccessPatch(config).defaults);
-    assert.deepEqual(config.agents.defaults.modelPolicy.allow, ["unrelated/model", "cliproxyapi/*"]);
-  }
+  // Reproduce login on a host with a pre-existing policy that hides CPA.
+  config.agents.defaults.modelPolicy = { allow: ["unrelated/model"] };
+  Object.assign(config.agents.defaults, buildAuthModelAccessPatch(config).defaults);
+  assert.deepEqual(config.agents.defaults.modelPolicy.allow, ["unrelated/model", "cliproxyapi/*"]);
   await writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
@@ -66,7 +61,6 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
       { env, timeout: 15000, maxBuffer: 4 * 1024 * 1024 });
     return JSON.parse(result.stdout).models.filter((m) => m.provider === "cliproxyapi");
   };
-  const disk = async () => JSON.parse(await readFile(path.join(stateDir, "agents/main/agent/plugins/cliproxyapi/catalog.json"), "utf8")).providers.cliproxyapi.models;
   async function waitFor(read, predicate, label) {
     const until = Date.now() + 45000; let last;
     while (Date.now() < until) {
@@ -78,19 +72,10 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   }
   await waitFor(list, (rows) => rows.some((m) => m.id === "model-a"), "initial discovery");
   ids = ["model-b", "model-c"]; context = 96000;
-  const inventory = prepared ? list : disk;
-  const changed = await waitFor(inventory, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
+  const changed = await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
   assert.equal(changed.find((m) => m.id === "model-b").contextWindow, 96000);
-  if (!prepared) {
-    // Legacy hosts own a separate picker cache. Do not weaken the prepared-host
-    // assertion by restarting a September Gateway to make stale rows disappear.
-    const oldPicker = await list();
-    t.diagnostic(`Legacy picker caches model-a: ${oldPicker.some((m) => m.id === "model-a")}`);
-    await stop(); start();
-    await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "legacy picker after restart");
-  }
   ids = [];
-  await waitFor(inventory, (rows) => rows.length === 0, "empty catalog publication");
+  await waitFor(list, (rows) => rows.length === 0, "empty catalog publication");
   assert.equal(await readFile(configPath, "utf8"), installedConfig);
-  t.diagnostic(`Catalog mode: ${prepared ? "prepared (no restart)" : "legacy"}; isolated artifacts: ${stateDir}`);
+  t.diagnostic(`Catalog published without restart; isolated artifacts: ${stateDir}`);
 });

@@ -69,28 +69,13 @@ Stopping the service waits for in-flight startup or refresh work. Generation che
 
 ## Host catalog publication
 
-### Legacy catalog API
+This release publishes only through `loadPreparedModelCatalog`. The plugin passes the real configuration with `readOnly:false` and `refreshFullCatalog:true`. The host refreshes published catalog state without a synthetic view. Hosts that only expose `loadModelCatalog` are not supported; install the plugin release built for that host.
 
-With `loadModelCatalog`, the plugin constructs a temporary configuration view containing current models and sets `useCache:false`. The host owns merging, credentials, catalog locks, and persistence. The view is not written back to the main configuration.
+## Compatibility
 
-This path primarily materializes the default agent's catalog. Other agents use host discovery and request-time checks; universal hot replacement of existing sessions is not promised.
-
-Some versions have a separate Gateway `models.list` cache whose invalidation is not public SDK functionality. The plugin does not bypass it through private APIs, RPC replacement, or repeated configuration writes. A normal restart or configuration reload may be necessary.
-
-### Prepared catalog API
-
-With `loadPreparedModelCatalog`, the plugin passes the real configuration with `readOnly:false` and `refreshFullCatalog:true`. The host refreshes published catalog state without a synthetic legacy view.
-
-This branch has source and parameter-contract coverage, but not end-to-end validation on the newer Gateway. API detection selects the integration path; it does not imply every later host version has been tested.
-
-Both paths verify complete publication and unexpected retained deletions. Explicitly configured user models are permitted.
-
-## Compatibility baseline
-
-| Component | Baseline | Validation |
+| Component | Target | Validation |
 | --- | --- | --- |
-| OpenClaw | `2026.7.1-2` | Real SDK, CLI installation, isolated Gateway integration |
-| OpenClaw prepared catalog | `2026.9.1`, `2026.9.2`, `2026.9.3`, `2026.9.5`, `2026.9.7` | Real SDK, CLI, and isolated Gateway; public RPC verifies catalog updates without restarting |
+| OpenClaw | `2026.9.7` only | Real SDK, CLI installation, isolated Gateway; public RPC verifies catalog updates without restarting |
 | CPA | `v7.2.149` and pinned source below | Catalog/thinking review and representative request validation |
 | Official pi plugin | `1.4.15` | Reference for parsing, mapping, caching, and refresh coordination |
 

@@ -22,7 +22,7 @@ npm run check
 CLI 和 peer SDK 应使用相同版本。可通过 npm 安装指定的开发测试版本：
 
 ```bash
-npm install --no-save --package-lock=false openclaw@2026.7.1-2
+npm install --no-save --package-lock=false openclaw@2026.9.7
 ```
 
 不要将全局安装目录、个人凭据或部署配置写入源码和测试夹具。

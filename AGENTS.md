@@ -39,7 +39,7 @@
 
 ## 新机器初始化（异地开发照此复现）
 
-前提：Node.js ≥ 22.16；全局 `openclaw` ≥ 2026.7.1-2（与本机生产同大版本最佳）。
+前提：Node.js 满足目标宿主要求（当前 `>=24.16.0 <25 || >=26.1.0`）；全局 `openclaw` 与 `package.json` 的目标版本一致（当前 `2026.9.7`）。
 
 ```bash
 git clone <repo> && cd openclaw-cliproxyapi-provider
@@ -75,7 +75,7 @@ scripts/dev.sh stop
 信任（官方文档明确此边界），本插件不依赖受信任状态，无功能影响。
 
 ## 分支与发布（自动化）
-- **dev 分支**：日常开发与测试。CI（单元 + host/gateway 多版本矩阵）在每次 push / PR 自动运行。
+- **dev 分支**：日常开发与测试。CI（单元 + 目标宿主的 host/gateway）在每次 push / PR 自动运行。
 - **main 分支**：发布分支。推送（含合并 dev → main）触发 `.github/workflows/release.yml`：先跑完整 CI 门禁，再发版。**版本号即发布开关**：`package.json` 的 `version` 对应的 tag `v<version>` 已存在则只跑 CI 不发版；要发版，在合并的 PR 里 bump 版本号（semver）。
 - **发版动作（全自动）**：创建 tag `v<version>` + GitHub Release（附 npm tarball、自动生成 changelog）→ 调用官方 ClawHub reusable workflow 发布（默认等待安全检查通过，最长 40 分钟）。
 - **CLAWHUB_TOKEN**：发布凭据，已存入 GitHub repo secrets。轮换：本机 `clawhub login` 后执行 `clawhub token | gh secret set CLAWHUB_TOKEN`。
@@ -104,14 +104,15 @@ scripts/dev.sh stop             # 验证完毕关停
 - 需要确认真实 CPA 行为时再用 `npm run test:live`（消耗配额，注入 `CPA_API_KEY`，
   见 docs/DEVELOPMENT.md）。
 
-## 版本矩阵
+## 版本兼容（只兼容目标宿主）
 
-- 最低兼容基线：`2026.7.1-2`（`npm install --no-save --package-lock=false openclaw@2026.7.1-2`
-  后跑集成套件）。
-- dev 实例跟随本机生产宿主版本（当前 `2026.9.7`），保证开发验证贴近真实环境。`2026.9.7` 起宿主要求 Node.js `>=24.16.0 <25 || >=26.1.0`；本插件代码仍可在 Node `>=22.16.0` 上运行，以继续覆盖 `2026.7.1-2` 基线。
-- 关注 [openclaw/openclaw releases](https://github.com/openclaw/openclaw/releases)
-  的 beta tag（形如 `v2026.x.N-beta.1`），出现后尽快对 beta 验证 —— 距稳定版通常只有
-  几小时。
+从 `0.1.4` 起，一个插件版本只兼容 `package.json` 里声明的那一个 OpenClaw 版本，不做向前兼容，也不假定更新的宿主可用。
+
+- 当前目标：OpenClaw `2026.9.7`（`peerDependencies.openclaw`、`openclaw.compat`、`openclaw.build` 三者相同）。Node.js 跟随该宿主：`>=24.16.0 <25 || >=26.1.0`。
+- 适配下一个 OpenClaw 版本时：改这三处声明、把 CI 的 `openclaw` 换成新版本、跑通该版本的 host/gateway，再 bump 插件版本发布。不要为了旧宿主保留第二套代码路径。
+- 旧 OpenClaw 安装对应的旧插件。`v0.1.3` 及更早版本覆盖 `2026.7.1-2` 起的已验证宿主；发布页按 tag 选择，不要把新插件装进旧宿主。
+- dev 实例跟随本机生产宿主，且必须与当前目标版本一致（当前 `2026.9.7`）。
+- 关注 [openclaw/openclaw releases](https://github.com/openclaw/openclaw/releases) 的 beta tag（形如 `v2026.x.N-beta.1`）。beta 只用于提前适配下一版，不加入当前版本的兼容范围 —— 距稳定版通常只有几小时。
 
 ## 自动化测试的隔离约定（维持不变）
 
