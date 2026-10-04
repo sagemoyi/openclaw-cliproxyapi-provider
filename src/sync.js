@@ -4,7 +4,7 @@ import { PROVIDER } from "./catalog.js";
 export async function materializeCatalog(config, snapshot, runtime, ctx = {}) {
   if (snapshot.stale) return { synced: false, reason: "stale" };
   if (typeof runtime.loadPreparedModelCatalog !== "function") {
-    throw new Error("This plugin targets OpenClaw 2026.9.7. Older hosts should install the plugin release built for that host.");
+    throw new Error("This plugin targets OpenClaw 2026.9.8. Older hosts should install the plugin release built for that host.");
   }
   // Refresh the published inventory on its real lifecycle owner.
   // Do not create a synthetic config generation in the atomic runtime.

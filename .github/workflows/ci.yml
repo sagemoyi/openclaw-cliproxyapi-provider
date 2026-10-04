@@ -2,7 +2,9 @@ name: Provider compatibility
 
 on:
   push:
+    branches: [dev]
   pull_request:
+    branches: [dev, main]
   workflow_dispatch:
   workflow_call:
 permissions:
@@ -28,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openclaw: ['2026.9.7']
+        openclaw: ['2026.9.8']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -39,8 +41,21 @@ jobs:
       # This release targets this exact OpenClaw version. Older hosts install the
       # plugin release built for that host; a newer host is not assumed compatible.
       - run: npm install --no-save --package-lock=false openclaw@${{ matrix.openclaw }}
-      - run: npm run check
-      - run: npm test
-      - run: npm run test:host
-      - run: npm run test:gateway
-      - run: npm pack --dry-run --json
+      # Shared local/Actions gate, including managed npm-pack installation and
+      # runtime inspection in the isolated Gateway suite.
+      - run: npm run test:ci
+
+  gate:
+    name: CI gate
+    if: ${{ always() }}
+    needs: [unit, host]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require every test job to succeed
+        env:
+          UNIT_RESULT: ${{ needs.unit.result }}
+          HOST_RESULT: ${{ needs.host.result }}
+        run: |
+          test "$UNIT_RESULT" = success
+          test "$HOST_RESULT" = success
