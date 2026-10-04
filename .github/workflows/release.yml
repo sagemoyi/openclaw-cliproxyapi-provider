@@ -72,11 +72,19 @@ jobs:
           if [ -n "$prev" ]; then range="${prev}..HEAD"; else range="HEAD"; fi
           {
             echo 'changelog<<EOF'
-            git log --no-merges --pretty='- %s (%h)' ${range}
+            git log --no-merges --pretty='- %s (%h)' "${range}"
             echo
             echo "Full diff: https://github.com/${{ github.repository }}/compare/${prev:-HEAD}...v${version}"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+      - name: Require an existing main release tag for real recovery
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          TAG_EXISTS: ${{ steps.meta.outputs.exists }}
+        run: |
+          test "$RELEASE_REF" = refs/heads/main
+          test "$TAG_EXISTS" = true
 
   release:
     needs: prepare
@@ -113,7 +121,7 @@ jobs:
     # 固定到已审阅的 ClawHub reusable workflow 提交，保持发布行为可复现（与 OpenClaw 官方做法一致）
     uses: openclaw/clawhub/.github/workflows/package-publish.yml@ff6c118c132ae89b5351739cc45fe9227ff1574e
     with:
-      dry_run: ${{ github.event_name != 'push' }}
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
       owner: sagemoyi
       changelog: ${{ needs.prepare.outputs.changelog }}
       wait_for_publication: true

@@ -20,12 +20,10 @@ export function resolveHostCli(cwd = process.cwd(), pathEnv = process.env.PATH ?
   return "openclaw";
 }
 
-// Install the packed plugin, not a --link of the checkout. OpenClaw 2026.9.5+ rejects a
-// linked checkout when its node_modules contains the running OpenClaw package: the install
-// record owns the whole repository, so the host package is reported as a conflicting child.
+// Exercise the managed npm installation users receive. A raw archive copy can
+// hide missing runtime dependencies that happen to exist in the source checkout.
 export async function installHostPlugin(cli, cwd = process.cwd()) {
   const help = (await cli("plugins", "install", "--help")).stdout;
-  // July rejects --force with --link; newer hosts use it for source consent.
   const args = [];
   if (/Confirm non-ClawHub sources/.test(help)) args.push("--force");
   if (help.includes("--accept-capabilities")) args.push("--accept-capabilities");
@@ -34,7 +32,7 @@ export async function installHostPlugin(cli, cwd = process.cwd()) {
     const packed = await exec("npm", ["pack", "--pack-destination", packDir, "--json"], { cwd });
     const archive = JSON.parse(packed.stdout).at(-1)?.filename;
     if (!archive) throw new Error(`npm pack produced no archive: ${packed.stdout}`);
-    await cli("plugins", "install", ...args, path.join(packDir, archive));
+    await cli("plugins", "install", ...args, `npm-pack:${path.join(packDir, archive)}`);
   } finally {
     await rm(packDir, { recursive: true, force: true });
   }

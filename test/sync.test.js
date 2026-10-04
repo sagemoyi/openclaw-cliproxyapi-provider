@@ -4,7 +4,7 @@ import { materializeCatalog } from "../src/sync.js";
 const config = { models: { providers: { unrelated: { baseUrl: "https://other.example", models: [] }, cliproxyapi: { baseUrl: "http://localhost/v1", models: [] } } } };
 const snapshot = { models: [{ id: "a", compat: {}, params: {} }], baseUrl: "http://localhost/v1", revision: "r1" };
 test("an older catalog API is rejected instead of published through a compatibility view", async () => {
-  await assert.rejects(materializeCatalog(config, snapshot, { loadModelCatalog: async () => [] }), /2026\.9\.7/);
+  await assert.rejects(materializeCatalog(config, snapshot, { loadModelCatalog: async () => [] }), /2026\.9\.8/);
 });
 test("new prepared API refreshes the actual config owner, not a synthetic generation", async () => {
   let received;

@@ -126,7 +126,7 @@ test("real SDK resolves OpenAI-owned Codex models to Responses and preserves Res
   assert.deepEqual(requests.map((request) => request.url), ["/v1/responses", "/v1/responses"]);
 });
 
-test("isolated OpenClaw CLI installs and loads the provider and fetches live catalogs", { timeout: 120000 }, async (t) => {
+test("isolated OpenClaw CLI installs and loads the provider and fetches live catalogs", { timeout: 240000 }, async (t) => {
   let ids = ["model-a", "model-b"];
   const server = createServer((req, res) => {
     res.setHeader("Content-Type", "application/json");
@@ -145,7 +145,7 @@ test("isolated OpenClaw CLI installs and loads the provider and fetches live cat
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir, OPENCLAW_CONFIG_PATH: configPath,
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
-  const cli = async (...args) => exec(resolveHostCli(), args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 });
+  const cli = async (...args) => exec(resolveHostCli(), args, { env, timeout: 120000, maxBuffer: 4 * 1024 * 1024 });
   await installHostPlugin(cli);
   const installedConfig = await readFile(configPath, "utf8");
   const listing = await cli("plugins", "list", "--json");

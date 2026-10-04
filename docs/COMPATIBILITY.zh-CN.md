@@ -1,10 +1,10 @@
 # Issue #1 兼容性复核
 
-复核日期：2026-09-09。原始反馈：[issue #1](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/issues/1)，重复的 #2 已关闭。
+初次复核日期：2026-09-09；最新适配：2026-10-04（OpenClaw `2026.9.8`）。原始反馈：[issue #1](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/issues/1)，重复的 #2 已关闭。
 
-本轮使用 Node.js `v24.16.0`；原报告使用 `v24.19.0`。隔离兼容测试使用本地模拟 CPA 和测试凭据；另通过本机已配置 CPA 完成三项真实推理验证（见下文），不复刻原报告的远程环境。宿主 CLI 与插件所解析的 SDK 必须匹配。
+初次复核使用 Node.js `v24.16.0`；原报告使用 `v24.19.0`。隔离兼容测试使用本地模拟 CPA 和测试凭据；另通过本机已配置 CPA 完成三项真实推理验证（见下文），不复刻原报告的远程环境。2026.9.8 的本次验证范围见下方适配记录。宿主 CLI 与插件所解析的 SDK 必须匹配。
 
-## 本轮独立验证范围
+## 历史独立验证范围
 
 | OpenClaw | PTY 登录及 profile 持久化 | CLI sync 正常退出 | Gateway 动态刷新 |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@
 | `2026.9.3` | 通过；另复现宿主隔离检查拒绝 | 通过 | 通过，无需重启 |
 | `2026.9.5` | 未复测 | 通过 | 通过，无需重启 |
 | `2026.9.7` | 未复测 | 通过 | 通过，无需重启 |
+| `2026.9.8` | 未复测 | 通过 | 通过，无需重启 |
 
 这些结果来自本地模拟 CPA，不代表上述版本在原报告的真实端点上推理成功。
 
@@ -30,7 +31,7 @@ npm run test:host
 npm run test:gateway
 ```
 
-分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5`、`2026.9.7` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。`2026.9.7` 宿主要求 Node.js `>=24.16.0 <25 || >=26.1.0`；插件自身仍声明 Node `>=22.16.0`，以便在 `2026.7.1-2` 基线上运行。
+分别在 `2026.7.1-2`、`2026.9.1`、`2026.9.2`、`2026.9.3`、`2026.9.5`、`2026.9.7` 运行宿主与 Gateway 用例；每次运行前确认 PATH 中的 OpenClaw 与项目 peer SDK 是同一精确版本。`2026.9.7` 宿主要求 Node.js `>=24.16.0 <25 || >=26.1.0`；历史兼容测试使用仍声明 Node `>=22.16.0` 的旧插件；从 `0.1.4` 起，插件的 Node.js 要求跟随目标宿主，不再覆盖旧宿主。
 
 - 69 项纯逻辑／契约测试通过。
 - 真实 SDK 的 Chat Completions 传输、CLI 安装、catalog、sync 及目录新增／删除通过。
@@ -67,6 +68,15 @@ npm run test:gateway
 - `2026.9.5` / `2026.9.7` 在 `--link` 指向含 `node_modules/openclaw` 的检出目录时，会把宿主包当成冲突的子插件并拒绝安装。集成测试改为 `npm pack` 后安装归档，并使用检出目录内的 peer CLI，使 CLI 与被测 SDK 为同一版本。`plugins.load.paths` 不再指向检出目录，避免源码候选盖住已安装的包记录。
 - `2026.9.7` 与本插件的 `engines.node` 都是 `>=24.16.0 <25 || >=26.1.0`。
 - 从 `0.1.4` 起，插件版本只声明并验证 OpenClaw `2026.9.7`：`peerDependencies`、`compat.pluginApi`、`minGatewayVersion` 与 `openclaw.build` 都是该版本。目录发布只走 `loadPreparedModelCatalog`，不再保留 `loadModelCatalog` 兼容路径。更早的宿主继续使用 `v0.1.3` 及以前的插件版本。
+
+## 2026.9.8 适配记录（0.1.5）
+
+- `0.1.5` 只兼容 OpenClaw `2026.9.8`；`peerDependencies.openclaw`、`compat.pluginApi`、`minGatewayVersion` 和 `openclaw.build` 统一为该版本，CI 使用同一精确版本。OpenClaw `2026.9.7` 继续使用插件 `v0.1.4`。
+- Node.js 要求保持 `>=24.16.0 <25 || >=26.1.0`。插件使用的公开 SDK 子路径仍可导入，`loadPreparedModelCatalog` 的参数和 prepared 发布路径兼容现有实现，无需增加旧宿主代码路径。
+- 在 Node.js `v24.16.0` 上验证真实 SDK 的 Chat Completions / Responses 流式传输、推理参数、工具 schema 及 Responses 403 错误保留；宿主 CLI 的 `cpa catalog`、`cpa sync` 正常退出，`models list --refresh` 反映模型新增和删除，主配置不被同步改写。
+- `npm run test:ci` 全部通过：70 项单元／契约测试、3 项宿主集成测试和 1 项 Gateway 集成测试。两套集成测试实际执行 `npm pack` → `npm-pack:` 托管安装；Gateway 在线时的 `plugins inspect --runtime --json` 确认插件已加载、provider 已注册、安装来源为 `npm-pack`。公开 `models.list` RPC 验证新增、删除、上下文变化和空目录，无需重启。
+- 测试仅使用临时状态目录、本地 mock CPA 和测试凭据，未操作常驻 dev/prod Gateway，未调用真实 CPA 推理；PTY 登录未复测。
+
 ## 登录与隔离环境
 
 在本机 `2026.9.3` 的实际 PTY 测试中，登录在显示端点和密钥提示之前退出。宿主报告 CLI 与已安装 Gateway 服务的状态目录及配置路径不同，并明确说明未写入凭据或配置。这是宿主的状态存储一致性检查，插件认证回调尚未执行。

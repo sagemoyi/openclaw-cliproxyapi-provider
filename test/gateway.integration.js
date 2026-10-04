@@ -13,7 +13,7 @@ import { installHostPlugin, resolveHostCli } from "./install-host-plugin.js";
 const exec = promisify(execFile);
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-test("Gateway publishes additions, removals, capabilities and empty catalogs on the host-owned path", { timeout: 150000 }, async (t) => {
+test("Gateway publishes additions, removals, capabilities and empty catalogs on the host-owned path", { timeout: 240000 }, async (t) => {
   let ids = ["model-a", "model-b"], context = 64000;
   const server = createServer((req, res) => {
     if (req.headers.authorization !== "Bearer test-key") { res.writeHead(401); res.end("{}"); return; }
@@ -43,7 +43,7 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
     OPENCLAW_SKIP_CHANNELS: "1", OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1" };
   delete env.OPENCLAW_AGENT_DIR;
   const hostCli = resolveHostCli();
-  await installHostPlugin((...args) => exec(hostCli, args, { env, timeout: 55000, maxBuffer: 4 * 1024 * 1024 }));
+  await installHostPlugin((...args) => exec(hostCli, args, { env, timeout: 120000, maxBuffer: 4 * 1024 * 1024 }));
   const installedConfig = await readFile(configPath, "utf8");
   let child, log = "";
   function start() {
@@ -71,6 +71,12 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
     throw new Error(`${label} failed: ${JSON.stringify(last)}\n${log}`);
   }
   await waitFor(list, (rows) => rows.some((m) => m.id === "model-a"), "initial discovery");
+  const inspection = JSON.parse((await exec(hostCli,
+    ["plugins", "inspect", "cliproxyapi", "--runtime", "--json"],
+    { env, timeout: 30000, maxBuffer: 4 * 1024 * 1024 })).stdout);
+  assert.equal(inspection.plugin.status, "loaded");
+  assert.ok(inspection.plugin.providerIds.includes("cliproxyapi"));
+  assert.equal(inspection.install.artifactKind, "npm-pack");
   ids = ["model-b", "model-c"]; context = 96000;
   const changed = await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
   assert.equal(changed.find((m) => m.id === "model-b").contextWindow, 96000);

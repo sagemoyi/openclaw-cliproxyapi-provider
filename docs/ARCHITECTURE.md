@@ -75,7 +75,7 @@ This release publishes only through `loadPreparedModelCatalog`. The plugin passe
 
 | Component | Target | Validation |
 | --- | --- | --- |
-| OpenClaw | `2026.9.7` only | Real SDK, CLI installation, isolated Gateway; public RPC verifies catalog updates without restarting |
+| OpenClaw | `2026.9.8` only | Real SDK, CLI installation, isolated Gateway; public RPC verifies catalog updates without restarting |
 | CPA | `v7.2.149` and pinned source below | Catalog/thinking review and representative request validation |
 | Official pi plugin | `1.4.15` | Reference for parsing, mapping, caching, and refresh coordination |
 

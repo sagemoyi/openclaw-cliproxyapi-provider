@@ -22,7 +22,7 @@ npm run check
 CLI 和 peer SDK 应使用相同版本。可通过 npm 安装指定的开发测试版本：
 
 ```bash
-npm install --no-save --package-lock=false openclaw@2026.9.7
+npm install --no-save --package-lock=false openclaw@2026.9.8
 ```
 
 不要将全局安装目录、个人凭据或部署配置写入源码和测试夹具。
@@ -35,6 +35,7 @@ npm install --no-save --package-lock=false openclaw@2026.9.7
 | `npm run check` | 插件入口和运行时模块语法 | 否 |
 | `npm run test:host` | 真实 OpenClaw SDK、HTTP/SSE 和 CLI | 否 |
 | `npm run test:gateway` | 隔离 Gateway 的自动目录同步 | 否 |
+| `npm run test:ci` | 本地与 Actions 完整门禁，含托管包安装 | 否 |
 | `npm run test:live` | 指定 CPA 端点的真实模型请求 | 是，会消耗额度 |
 
 自动化测试包含纯逻辑／契约、宿主集成和 Gateway 测试。测试数量以当前运行输出为准；数量不代表模型覆盖率，应以各测试的断言为准。
@@ -76,15 +77,13 @@ npm run test:gateway
 - high、max、显式 ultra、off 和 adaptive 到最终请求参数的映射。
 - 目录从 reasoning 切换为非 reasoning 后，后续请求不再发送 effort。
 - 工具 schema 和流式结果保持有效。
-- 实际安装、加载插件，并通过 CLI 发现和同步模型。
+- 实际通过 `npm-pack:` 托管安装、加载插件，并通过 CLI 发现和同步模型。
 - 目录从 a/b 更新为 b/c，已删除模型不再出现在生成列表中。
 - 同步不会修改主配置。
 
 ### Gateway 生命周期
 
-`test/gateway.integration.js` 验证后台服务自动发布模型新增、删除、上下文变化及空目录，并检查 legacy Gateway 选择器缓存的重启行为。
-
-该测试按宿主 API 选择验证路径：legacy 宿主检查生成目录及重启后的选择器；prepared 宿主通过公开 `models.list` RPC 验证无需重启的更新，并覆盖已有 `modelPolicy.allow` 的合并。每个宿主版本仍需单独运行，某一版本通过不代表其他版本已通过。
+`test/gateway.integration.js` 通过 `npm-pack:` 托管安装，并在其临时 Gateway 在线时运行 `plugins inspect --runtime --json`，断言已加载、provider 已注册及安装来源。随后通过公开 `models.list` RPC 验证无需重启的模型新增、删除、上下文变化及空目录，并覆盖已有 `modelPolicy.allow` 的合并。测试只针对 `package.json` 声明的精确宿主版本。
 
 ## 真实端点测试
 
@@ -136,13 +135,12 @@ npm test
 ## 提交前检查
 
 ```bash
-git diff --check
-npm test
-npm run check
-npm run test:host
-npm run test:gateway
-npm pack --dry-run
+npm run test:ci
 ```
+
+与 Actions 使用相同入口：核对已安装宿主和兼容／构建声明，再运行 diff、语法、单元、host 和 gateway 检查。包验证使用真正的托管安装与运行时检查，不能用 `npm pack --dry-run` 替代。无需启动常驻 dev/prod Gateway。
+
+推送到 dev、面向 dev/main 的 PR 会自动运行 CI，不发布。main 分支保护要求通过 PR 合并、分支与 main 保持最新、固定名称的 `CI gate` 检查成功；管理员也受约束，不强制他人审批。合并后，发布工作流再跑同一套门禁，新版本全部通过后自动发布。分支保护属于 GitHub 仓库设置，新仓库需另行配置。
 
 涉及宿主适配或传输修改时运行集成测试；需要确认服务端行为时再显式运行真实端点测试。发布前检查包中包含运行时模块、manifest、元数据和许可证，不包含凭据、测试状态或 node_modules。
 

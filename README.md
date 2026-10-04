@@ -17,10 +17,10 @@ Provider ID: `cliproxyapi`. Built on the public OpenClaw plugin SDK; no OpenClaw
 
 ## Requirements
 
-- OpenClaw `2026.9.7` exactly, with Node.js `>=24.16.0 <25` or `>=26.1.0`. This release is not compatible with other OpenClaw versions. Hosts on an older OpenClaw install the plugin release built for that host (`v0.1.3` and earlier). See [Architecture and compatibility](docs/ARCHITECTURE.md).
+- OpenClaw `2026.9.8` exactly, with Node.js `>=24.16.0 <25` or `>=26.1.0`. This release is not compatible with other OpenClaw versions. Hosts on an older OpenClaw install the plugin release built for that host (`v0.1.4` for `2026.9.7`; `v0.1.3` and earlier for older hosts). See [Architecture and compatibility](docs/ARCHITECTURE.md).
 - A reachable CPA HTTP(S) endpoint and a model-access API key. No management key is required.
 
-OpenClaw `2026.9.7` publishes catalog changes without a Gateway restart. Hosts older than this release are outside its compatibility range.
+OpenClaw `2026.9.8` publishes catalog changes without a Gateway restart. Hosts older than this release are outside its compatibility range.
 
 ## Install
 
@@ -273,7 +273,7 @@ OpenClaw versions with `agents.defaults.modelPolicy.allow` use that explicit pol
 
 ### Sync reports success but does not exit
 
-OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. This release supports OpenClaw `2026.9.7` only. For one-shot sync commands on an older host, install the plugin release built for that host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md). If either August host must be retained, see the separate [host patches and rollback instructions](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw); plugin updates do not apply these patches automatically.
+OpenClaw `2026.8.1` / `2026.8.2` can retain a host worker after prepared catalog publication completes. This release supports OpenClaw `2026.9.8` only. For one-shot sync commands on an older host, install the plugin release built for that host. See the [compatibility investigation (Chinese)](docs/COMPATIBILITY.zh-CN.md). If either August host must be retained, see the separate [host patches and rollback instructions](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/tree/main/patches/openclaw); plugin updates do not apply these patches automatically.
 
 ### Provider or login method is missing
 

@@ -22,7 +22,7 @@ Pure tests use Node.js's built-in runner and need no additional dependencies. Ho
 Keep the CLI and peer SDK on the same version. For example, install the integration baseline as a development dependency without changing package metadata:
 
 ```bash
-npm install --no-save --package-lock=false openclaw@2026.9.7
+npm install --no-save --package-lock=false openclaw@2026.9.8
 ```
 
 Do not embed global installation paths, personal credentials, or deployment configuration in source or fixtures.
@@ -35,6 +35,7 @@ Do not embed global installation paths, personal credentials, or deployment conf
 | `npm run check` | Entry point and runtime syntax | Not required |
 | `npm run test:host` | Real OpenClaw SDK, HTTP/SSE, CLI | Not required |
 | `npm run test:gateway` | Isolated Gateway catalog synchronization | Not required |
+| `npm run test:ci` | Complete local/Actions gate, including managed package installation | Not required |
 | `npm run test:live` | Real requests to a configured CPA endpoint | Required; consumes quota |
 
 The automated suites cover pure logic/contracts, host integration, and the Gateway. Current run output gives the test counts; counts do not measure model coverage, so inspect their assertions.
@@ -76,15 +77,13 @@ Artifact directories are retained for inspection, and their paths appear in test
 - high, max, explicit ultra, off, and adaptive mapping to final request parameters.
 - No effort injection after the catalog changes to non-reasoning.
 - Tool schemas and streamed results remain valid.
-- Actual plugin installation, loading, CLI discovery, and publication.
+- Actual managed `npm-pack:` installation, loading, CLI discovery, and publication.
 - Inventory changes from a/b to b/c without retaining the removed model.
 - Synchronization leaves the main configuration unchanged.
 
 ### Gateway lifecycle
 
-`test/gateway.integration.js` checks automatic publication of additions, deletions, context changes, and an empty catalog, plus restart behavior for the legacy picker cache.
-
-The host API determines the assertions: legacy hosts use the generated catalog and the picker after a restart; prepared hosts use the public `models.list` RPC to verify updates without restarting, including merging an existing `modelPolicy.allow`. Run this suite separately on each host version; success on one version does not establish coverage of another.
+`test/gateway.integration.js` checks managed `npm-pack:` installation and `plugins inspect --runtime --json` while its temporary Gateway is online. It asserts loaded status, provider registration, and installation provenance, then checks additions, deletions, context changes, and an empty catalog through public `models.list` RPC without restarting. It also covers merging an existing `modelPolicy.allow`. The suite targets the exact host version declared in `package.json`.
 
 ## Live endpoint tests
 
@@ -134,13 +133,12 @@ Do not treat every bundled model as available or add unverified alias mappings.
 ## Before submitting changes
 
 ```bash
-git diff --check
-npm test
-npm run check
-npm run test:host
-npm run test:gateway
-npm pack --dry-run
+npm run test:ci
 ```
+
+This is the same gate used by Actions: it verifies the installed host and compatibility/build declarations, then runs diff, syntax, unit, host, and Gateway checks. Package verification uses real managed installation and runtime inspection, not `npm pack --dry-run`. No persistent dev/prod Gateway is needed.
+
+Pushes to `dev` and pull requests targeting `dev`/`main` run CI without publishing. Main branch protection requires a pull request, an up-to-date branch, and the stable `CI gate` check; it applies to administrators and does not require another person's approval. After merging, the release workflow reruns the same gate before automatically publishing a new package version. These protection settings live in GitHub and must be configured separately for another repository.
 
 Run integration suites for host or transport changes. Use live tests explicitly when server behavior needs confirmation. Before release, inspect the package for runtime modules, manifest, metadata, and licenses, and ensure it excludes credentials, test state, and node_modules.
 

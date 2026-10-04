@@ -39,7 +39,7 @@
 
 ## 新机器初始化（异地开发照此复现）
 
-前提：Node.js 满足目标宿主要求（当前 `>=24.16.0 <25 || >=26.1.0`）；全局 `openclaw` 与 `package.json` 的目标版本一致（当前 `2026.9.7`）。
+前提：Node.js 满足目标宿主要求（当前 `>=24.16.0 <25 || >=26.1.0`）；全局 `openclaw` 与 `package.json` 的目标版本一致（当前 `2026.9.8`）。
 
 ```bash
 git clone <repo> && cd openclaw-cliproxyapi-provider
@@ -75,28 +75,34 @@ scripts/dev.sh stop
 信任（官方文档明确此边界），本插件不依赖受信任状态，无功能影响。
 
 ## 分支与发布（自动化）
-- **dev 分支**：日常开发与测试。CI（单元 + 目标宿主的 host/gateway）在每次 push / PR 自动运行。
+- **dev 分支**：日常开发与测试。每次 push、面向 dev/main 的 PR 自动运行 CI，包含单元、目标宿主 host/gateway、`npm-pack:` 托管安装及运行时检查；不发布。
+- **合并门禁**：main 要求通过 PR 合并、分支与 main 保持最新、固定名称的 `CI gate` 检查成功；管理员同样受约束。不强制他人审批，适合单人维护。`CI gate` 只有在所有测试 job 成功时才成功，失败或跳过均拦截合并。此保护是 GitHub 仓库设置，新仓库需另行配置。
 - **main 分支**：发布分支。推送（含合并 dev → main）触发 `.github/workflows/release.yml`：先跑完整 CI 门禁，再发版。**版本号即发布开关**：`package.json` 的 `version` 对应的 tag `v<version>` 已存在则只跑 CI 不发版；要发版，在合并的 PR 里 bump 版本号（semver）。
 - **发版动作（全自动）**：创建 tag `v<version>` + GitHub Release（附 npm tarball、自动生成 changelog）→ 调用官方 ClawHub reusable workflow 发布（默认等待安全检查通过，最长 40 分钟）。
 - **CLAWHUB_TOKEN**：发布凭据，已存入 GitHub repo secrets。轮换：本机 `clawhub login` 后执行 `clawhub token | gh secret set CLAWHUB_TOKEN`。
-- **预览与恢复**：Actions → Release → Run workflow。`dry_run=true`（默认）只做 ClawHub 预览不发布；`dry_run=false` 用于失败后的补发（GitHub Release 已建好但 ClawHub 未发布时）。ClawHub 拒绝重复版本，重复发布会失败属预期护栏。
+- **预览与恢复**：Actions → Release → Run workflow。`dry_run=true`（默认）只做 ClawHub 预览不发布；`dry_run=false` 用于失败后的补发（选择 main，且当前版本的发布 tag 已存在）。ClawHub 拒绝重复版本，重复发布会失败属预期护栏。
 - **顺序约定**：ClawHub 发布在 GitHub Release 之后；若 ClawHub 成功而后续步骤失败，手工补 `git tag`/`gh release create` 即可，不要改版本号重发。
-- （可选加固）GitHub repo 设置里给 main 加分支保护：要求 PR + CI 通过。也可按官方文档升级为 OIDC trusted publishing（`clawhub package trusted-publisher set`），去掉长期 token。
+- （可选加固）可按官方文档升级为 OIDC trusted publishing（`clawhub package trusted-publisher set`），去掉长期 token。
 ## 发布前验证（合并到 main 前的本地检查）
 
 以下检查与 release pipeline 中的 CI 门禁一致，合并 dev → main 前应在本地跑过：
 
 ```bash
-git diff --check
-npm test && npm run check
-npm run test:host && npm run test:gateway
+npm run test:ci
+```
+
+`test:ci` 与 Actions 的宿主 job 使用同一个入口：先核对已安装宿主和全部兼容声明，再检查 diff、语法、单元、host 和 gateway。集成测试在临时目录中执行 `npm pack` → `npm-pack:` 托管安装；gateway 测试还在其临时 Gateway 在线时执行 `inspect --runtime --json`，断言已加载、provider 注册及安装来源。无需启动常驻 dev Gateway。
+
+需要在常驻 dev 实例中另做手动包验证时：
+
+```bash
 scripts/dev.sh start            # pack-verify 的 inspect --runtime 需要 dev Gateway 在线
 scripts/dev.sh pack-verify      # npm pack → npm-pack: 安装 → inspect --runtime --json
 scripts/dev.sh install && scripts/dev.sh restart   # 恢复 link 开发形态
 scripts/dev.sh stop             # 验证完毕关停
 ```
 
-- `pack-verify` **不可省略也不能被 `npm pack --dry-run` 替代**：npm-pack 走 OpenClaw
+- 托管包安装和运行时验证 **不可省略也不能被 `npm pack --dry-run` 替代**：`test:ci` 已包含同等验证，`scripts/dev.sh pack-verify` 是手动入口。npm-pack 走 OpenClaw
   托管的每插件 npm 项目，能发现源码 checkout 掩盖的依赖错误。官方明确：不要用原始
   路径/归档安装作为最终验证。
 - 运行时依赖必须在 `dependencies` / `optionalDependencies`；`devDependencies` 不会
@@ -108,10 +114,10 @@ scripts/dev.sh stop             # 验证完毕关停
 
 从 `0.1.4` 起，一个插件版本只兼容 `package.json` 里声明的那一个 OpenClaw 版本，不做向前兼容，也不假定更新的宿主可用。
 
-- 当前目标：OpenClaw `2026.9.7`（`peerDependencies.openclaw`、`openclaw.compat`、`openclaw.build` 三者相同）。Node.js 跟随该宿主：`>=24.16.0 <25 || >=26.1.0`。
+- 当前目标：OpenClaw `2026.9.8`（`peerDependencies.openclaw`、`openclaw.compat`、`openclaw.build` 三者相同）。Node.js 跟随该宿主：`>=24.16.0 <25 || >=26.1.0`。
 - 适配下一个 OpenClaw 版本时：改这三处声明、把 CI 的 `openclaw` 换成新版本、跑通该版本的 host/gateway，再 bump 插件版本发布。不要为了旧宿主保留第二套代码路径。
-- 旧 OpenClaw 安装对应的旧插件。`v0.1.3` 及更早版本覆盖 `2026.7.1-2` 起的已验证宿主；发布页按 tag 选择，不要把新插件装进旧宿主。
-- dev 实例跟随本机生产宿主，且必须与当前目标版本一致（当前 `2026.9.7`）。
+- 旧 OpenClaw 安装对应的旧插件。OpenClaw `2026.9.7` 使用 `v0.1.4`；`v0.1.3` 及更早版本覆盖 `2026.7.1-2` 起的已验证宿主；发布页按 tag 选择，不要把新插件装进旧宿主。
+- dev 实例跟随本机生产宿主，且必须与当前目标版本一致（当前 `2026.9.8`）。
 - 关注 [openclaw/openclaw releases](https://github.com/openclaw/openclaw/releases) 的 beta tag（形如 `v2026.x.N-beta.1`）。beta 只用于提前适配下一版，不加入当前版本的兼容范围 —— 距稳定版通常只有几小时。
 
 ## 自动化测试的隔离约定（维持不变）
