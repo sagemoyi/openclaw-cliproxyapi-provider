@@ -65,7 +65,7 @@ Transient failures permit bounded stale use without extending the original snaps
 
 Publication runs through a serial queue so an earlier operation cannot finish writing after a later one. The successful-publication fingerprint includes endpoint, catalog revision, configuration, and agent scope. Failed publication does not advance the fingerprint, allowing retries. Stale snapshots are not published as new catalogs.
 
-Stopping the service waits for in-flight startup or refresh work. Generation checks prevent stopped or superseded timer callbacks from restarting the loop. There is no separate plugin-owned disk cache or credential file.
+Service startup launches the first synchronization in the background and returns immediately. Prepared catalog publication can wait for the replacement generation to become active, so awaiting publication in `start()` would block hot reload. Stopping the service waits for in-flight synchronization work. Generation checks prevent stopped or superseded timer callbacks from restarting the loop. There is no separate plugin-owned disk cache or credential file.
 
 ## Host catalog publication
 

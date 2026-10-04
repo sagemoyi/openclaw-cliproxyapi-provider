@@ -3,7 +3,7 @@ import "./isolated-host-env.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, writeFile, readFile } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, appendFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn, execFile } from "node:child_process";
@@ -77,6 +77,18 @@ test("Gateway publishes additions, removals, capabilities and empty catalogs on 
   assert.equal(inspection.plugin.status, "loaded");
   assert.ok(inspection.plugin.providerIds.includes("cliproxyapi"));
   assert.equal(inspection.install.artifactKind, "npm-pack");
+  // Changing captured code forces a real replacement instead of an unchanged reload.
+  // All files and the Gateway belong to this test's temporary state directory.
+  const entry = inspection.plugin.source;
+  assert.ok(entry.startsWith(`${stateDir}${path.sep}`), entry);
+  await appendFile(path.join(path.dirname(entry), "src", "lifecycle.js"), "\n// isolated reload regression\n");
+  const reloaded = JSON.parse((await exec(hostCli,
+    ["plugins", "reload", "cliproxyapi", "--json"],
+    { env, timeout: 90000, maxBuffer: 4 * 1024 * 1024 })).stdout);
+  assert.equal(reloaded.restartRequired, false);
+  assert.ok(reloaded.runtime?.generation);
+  await waitFor(list, (rows) => rows.some((m) => m.id === "model-a"), "catalog after reload");
+  assert.doesNotMatch(log, /plugin service startup timed out/);
   ids = ["model-b", "model-c"]; context = 96000;
   const changed = await waitFor(list, (rows) => rows.some((m) => m.id === "model-c") && !rows.some((m) => m.id === "model-a"), "automatic publication");
   assert.equal(changed.find((m) => m.id === "model-b").contextWindow, 96000);
