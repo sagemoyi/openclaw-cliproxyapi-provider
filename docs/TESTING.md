@@ -83,7 +83,7 @@ npm run test:gateway
 
 ### Gateway 生命周期
 
-`test/gateway.integration.js` 通过 `npm-pack:` 托管安装，并在其临时 Gateway 在线时运行 `plugins inspect --runtime --json`，断言已加载、provider 已注册及安装来源。随后通过公开 `models.list` RPC 验证无需重启的模型新增、删除、上下文变化及空目录，并覆盖已有 `modelPolicy.allow` 的合并。测试只针对 `package.json` 声明的精确宿主版本。
+`test/gateway.integration.js` 通过 `npm-pack:` 托管安装，并在其临时 Gateway 在线时运行 `plugins inspect --runtime --json`，断言已加载、provider 已注册及安装来源。随后通过公开 `models.list` RPC 验证无需重启的模型新增、删除、上下文变化及空目录，同时修改临时安装包中的 helper，执行真实的 `plugins reload --json` 替换，断言代际已应用、不需要重启且后续目录同步仍正常，并覆盖已有 `modelPolicy.allow` 的合并。测试只针对 `package.json` 声明的精确宿主版本。
 
 ## 真实端点测试
 

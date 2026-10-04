@@ -83,7 +83,7 @@ Artifact directories are retained for inspection, and their paths appear in test
 
 ### Gateway lifecycle
 
-`test/gateway.integration.js` checks managed `npm-pack:` installation and `plugins inspect --runtime --json` while its temporary Gateway is online. It asserts loaded status, provider registration, and installation provenance, then checks additions, deletions, context changes, and an empty catalog through public `models.list` RPC without restarting. It also covers merging an existing `modelPolicy.allow`. The suite targets the exact host version declared in `package.json`.
+`test/gateway.integration.js` checks managed `npm-pack:` installation and `plugins inspect --runtime --json` while its temporary Gateway is online. It asserts loaded status, provider registration, and installation provenance, then checks additions, deletions, context changes, and an empty catalog through public `models.list` RPC without restarting. It also changes a helper inside the installed temporary package, performs a real `plugins reload --json` replacement, and verifies the applied generation, no restart requirement, and continued catalog synchronization. It covers merging an existing `modelPolicy.allow`. The suite targets the exact host version declared in `package.json`.
 
 ## Live endpoint tests
 

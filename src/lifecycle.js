@@ -32,7 +32,7 @@ export function createCatalogSynchronizer({ discover, publish, config }) {
   };
 }
 
-/** One loop per service generation; stop also waits for startup discovery. */
+/** Start the background loop without blocking host activation; stop drains it. */
 export function createCatalogService({ sync, intervalMs, schedule = setTimeout, cancel = clearTimeout }) {
   let generation = 0;
   let active = false;
@@ -41,7 +41,7 @@ export function createCatalogService({ sync, intervalMs, schedule = setTimeout, 
   return {
     id: "cliproxyapi-catalog",
     async start(ctx) {
-      if (active) return pending;
+      if (active) return;
       active = true;
       const mine = ++generation;
       const tick = () => {
@@ -56,7 +56,10 @@ export function createCatalogService({ sync, intervalMs, schedule = setTimeout, 
         });
         return pending;
       };
-      await tick();
+      // Prepared catalog publication may wait for this plugin generation to
+      // become active. Awaiting it here makes replacement activation wait on
+      // itself and exceeds the host's service startup deadline.
+      void tick();
     },
     async stop() {
       active = false;

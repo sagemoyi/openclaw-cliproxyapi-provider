@@ -122,6 +122,24 @@ test("failed publication can retry; stale and unconfigured snapshots are not pub
   assert.equal(writes, 2);
 });
 
+test("service startup and duplicate starts settle while initial catalog publication is pending", async () => {
+  const gate = deferred();
+  let calls = 0, started = false;
+  const service = createCatalogService({ sync: () => { calls++; return gate.promise; }, intervalMs: 10,
+    schedule: () => ({}), cancel() {} });
+  const ctx = { logger: { warn() {} } };
+  const starting = Promise.all([service.start(ctx), service.start(ctx)]).then(() => { started = true; });
+  try {
+    await flush();
+    assert.equal(calls, 1);
+    assert.equal(started, true, "Gateway activation must not wait for catalog publication");
+  } finally {
+    gate.resolve();
+    await starting;
+    await service.stop();
+  }
+});
+
 test("stopping during startup waits for discovery and never schedules a new timer", async () => {
   const gate = deferred();
   let scheduled = 0, stopped = false;
@@ -142,11 +160,13 @@ test("duplicate starts do not create extra loops and a stopped callback cannot r
     schedule: (fn) => { scheduled.push(fn); return {}; }, cancel() {} });
   const ctx = { logger: { warn() {} } };
   await Promise.all([service.start(ctx), service.start(ctx)]);
+  await flush();
   assert.equal(calls, 1);
   assert.equal(scheduled.length, 1);
   const oldCallback = scheduled[0];
   await service.stop();
   await service.start(ctx);
+  await flush();
   await oldCallback();
   assert.equal(calls, 2);
   assert.equal(scheduled.length, 2);
