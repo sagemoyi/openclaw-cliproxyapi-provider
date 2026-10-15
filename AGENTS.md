@@ -39,7 +39,7 @@
 
 ## 新机器初始化（异地开发照此复现）
 
-前提：Node.js 满足目标宿主要求（当前 `>=24.16.0 <25 || >=26.1.0`）；全局 `openclaw` 与 `package.json` 的目标版本一致（当前 `2026.9.8`）。
+前提：Node.js 满足目标宿主要求（当前 `>=24.16.0 <25 || >=26.1.0`）；全局 `openclaw` 与 `package.json` 的目标版本一致（当前 `2026.10.3`）。
 
 ```bash
 git clone <repo> && cd openclaw-cliproxyapi-provider
@@ -69,7 +69,7 @@ scripts/dev.sh stop
 ```
 
 运行策略：**dev Gateway 平时不运行**（`dev.sh setup` 安装服务后会禁用开机自启），只在需要手动验证时 `start`，用完 `stop`。自动化测试套件（`npm test`、`test:host`、`test:gateway`）全部自带临时环境，不依赖 dev Gateway 是否在跑。`dev.sh stop` 直接调用 `systemctl --user stop openclaw-gateway-dev.service`——2026.9.3 的 `gateway stop` 误伤护栏不识别 profile，CLI 路径可能拦错目标。
-注意：2026.9.3 没有 `plugins reload` 命令；`scripts/dev.sh reload` 是 `gateway restart` 的别名。`pack-verify` 会把安装形态变成 tarball 拷贝，继续开发前需重新 `scripts/dev.sh install && scripts/dev.sh restart` 恢复 link。
+注意：当前宿主支持 `plugins reload`；`scripts/dev.sh reload` 仍是 `gateway restart` 的别名，确保 --link 的 ESM helper 重新加载。`pack-verify` 会把安装形态变成 tarball 拷贝，继续开发前需重新 `scripts/dev.sh install && scripts/dev.sh restart` 恢复 link。
 
 `plugins inspect` 中 `trust.reason: "origin-path"` 属正常：本地 link 安装不继承官方
 信任（官方文档明确此边界），本插件不依赖受信任状态，无功能影响。
@@ -114,10 +114,10 @@ scripts/dev.sh stop             # 验证完毕关停
 
 从 `0.1.4` 起，一个插件版本只兼容 `package.json` 里声明的那一个 OpenClaw 版本，不做向前兼容，也不假定更新的宿主可用。
 
-- 当前目标：OpenClaw `2026.9.8`（`peerDependencies.openclaw`、`openclaw.compat`、`openclaw.build` 三者相同）。Node.js 跟随该宿主：`>=24.16.0 <25 || >=26.1.0`。
+- 当前目标：OpenClaw `2026.10.3`（`peerDependencies.openclaw`、`openclaw.compat`、`openclaw.build` 三者相同）。Node.js 跟随该宿主：`>=24.16.0 <25 || >=26.1.0`。
 - 适配下一个 OpenClaw 版本时：改这三处声明、把 CI 的 `openclaw` 换成新版本、跑通该版本的 host/gateway，再 bump 插件版本发布。不要为了旧宿主保留第二套代码路径。
-- 旧 OpenClaw 安装对应的旧插件。OpenClaw `2026.9.7` 使用 `v0.1.4`；`v0.1.3` 及更早版本覆盖 `2026.7.1-2` 起的已验证宿主；发布页按 tag 选择，不要把新插件装进旧宿主。
-- dev 实例跟随本机生产宿主，且必须与当前目标版本一致（当前 `2026.9.8`）。
+- 旧 OpenClaw 安装对应的旧插件。OpenClaw `2026.9.8` 使用 `v0.1.6`；`2026.9.7` 使用 `v0.1.4`；`v0.1.3` 及更早版本覆盖 `2026.7.1-2` 起的已验证宿主；发布页按 tag 选择，不要把新插件装进旧宿主。
+- dev 实例跟随本机生产宿主，且必须与当前目标版本一致（当前 `2026.10.3`）。
 - 关注 [openclaw/openclaw releases](https://github.com/openclaw/openclaw/releases) 的 beta tag（形如 `v2026.x.N-beta.1`）。beta 只用于提前适配下一版，不加入当前版本的兼容范围 —— 距稳定版通常只有几小时。
 
 ## 自动化测试的隔离约定（维持不变）

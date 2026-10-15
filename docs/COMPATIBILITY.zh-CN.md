@@ -1,8 +1,8 @@
 # Issue #1 兼容性复核
 
-初次复核日期：2026-09-09；最新适配：2026-10-04（OpenClaw `2026.9.8`）。原始反馈：[issue #1](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/issues/1)，重复的 #2 已关闭。
+初次复核日期：2026-09-09；最新适配：2026-10-15（OpenClaw `2026.10.3`）。原始反馈：[issue #1](https://github.com/sagemoyi/openclaw-cliproxyapi-provider/issues/1)，重复的 #2 已关闭。
 
-初次复核使用 Node.js `v24.16.0`；原报告使用 `v24.19.0`。隔离兼容测试使用本地模拟 CPA 和测试凭据；另通过本机已配置 CPA 完成三项真实推理验证（见下文），不复刻原报告的远程环境。2026.9.8 的本次验证范围见下方适配记录。宿主 CLI 与插件所解析的 SDK 必须匹配。
+初次复核使用 Node.js `v24.16.0`；原报告使用 `v24.19.0`。隔离兼容测试使用本地模拟 CPA 和测试凭据；另通过本机已配置 CPA 完成三项真实推理验证（见下文），不复刻原报告的远程环境。2026.10.3 的本次验证范围见下方适配记录。宿主 CLI 与插件所解析的 SDK 必须匹配。
 
 ## 历史独立验证范围
 
@@ -17,6 +17,7 @@
 | `2026.9.5` | 未复测 | 通过 | 通过，无需重启 |
 | `2026.9.7` | 未复测 | 通过 | 通过，无需重启 |
 | `2026.9.8` | 未复测 | 通过 | 通过，无需重启 |
+| `2026.10.3` | 未复测 | 通过 | 通过，无需重启 |
 
 这些结果来自本地模拟 CPA，不代表上述版本在原报告的真实端点上推理成功。
 
@@ -83,6 +84,16 @@ npm run test:gateway
 - 隔离 Gateway 内安装原 `0.1.5` 代码，修改临时安装包的 helper 并执行真实 `plugins reload --json`，复现同样的 5000ms 启动超时和回滚错误。
 - `0.1.6` 改为后台发起首次同步，`start()` 立即返回；重复启动仍只保留一个循环，`stop()` 仍等待进行中的同步，过期代际不再调度定时器。
 - 修正后 `npm run test:ci` 通过：71 项单元／契约、3 项宿主、1 项 Gateway 集成。Gateway 测试断言真实代码替换已应用、不需要重启，并继续验证目录增删、上下文变化和空目录。该修正从 `0.1.6` 起提供，`0.1.5` 不含该修正；诊断只读取生产日志，修复验证全部在临时环境中完成。
+
+## 2026.10.3 适配记录（0.1.7）
+
+- `0.1.7` 只兼容 OpenClaw `2026.10.3`；`peerDependencies.openclaw`、`compat.pluginApi`、`minGatewayVersion` 和 `openclaw.build` 统一为该版本，CI 使用同一精确版本。OpenClaw `2026.9.8` 继续使用插件 `v0.1.6`。
+- Node.js 要求保持 `>=24.16.0 <25 || >=26.1.0`。公开 SDK 子路径及 `loadPreparedModelCatalog` 的参数仍兼容，沿用现有 provider、目录发布和后台服务实现。
+- 目标宿主依赖 npm `12.1.0`，在 npm scripts 的 PATH 中可能优先于全局 npm。其 `npm pack --json` 输出按包名索引的对象，npm 11 则输出数组；托管安装测试辅助脚本现支持这两种格式，继续执行真实的 `npm-pack:` 安装。
+- 在 Node.js `v24.16.0` 上验证 Chat Completions / Responses 流式传输、推理参数、工具 schema 及 Responses 403 错误保留；宿主 CLI 的托管安装、`cpa catalog`、`cpa sync`、`models list --refresh` 增删均通过，主配置保持不变。
+- Gateway 集成通过：`inspect --runtime --json` 确认插件已加载、provider 已注册、安装来源为 `npm-pack`；真实 `plugins reload --json` 代码替换无需重启，随后 `models.list` RPC 验证模型新增、删除、上下文变化和空目录。
+- `npm run test:ci` 全部通过：71 项单元／契约、3 项宿主集成、1 项 Gateway 集成。
+- 验证使用仓库内独立安装的宿主、临时状态目录、动态端口和本地 mock CPA；全局 OpenClaw 及常驻 dev/prod Gateway 均未变更，真实 CPA 推理和 PTY 登录未复测。
 
 ## 登录与隔离环境
 
