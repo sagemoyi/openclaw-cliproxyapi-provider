@@ -30,7 +30,10 @@ export async function installHostPlugin(cli, cwd = process.cwd()) {
   const packDir = await mkdtemp(path.join(tmpdir(), "cpa-plugin-pack-"));
   try {
     const packed = await exec("npm", ["pack", "--pack-destination", packDir, "--json"], { cwd });
-    const archive = JSON.parse(packed.stdout).at(-1)?.filename;
+    // npm 12 (shipped by the target host) keys results by package name;
+    // npm 11 returns an array. npm scripts may select either executable.
+    const results = JSON.parse(packed.stdout);
+    const archive = (Array.isArray(results) ? results : Object.values(results)).at(-1)?.filename;
     if (!archive) throw new Error(`npm pack produced no archive: ${packed.stdout}`);
     await cli("plugins", "install", ...args, `npm-pack:${path.join(packDir, archive)}`);
   } finally {

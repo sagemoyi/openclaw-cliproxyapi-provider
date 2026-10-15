@@ -9,7 +9,7 @@
 # 用法：
 #   scripts/dev.sh setup                  初始化 dev profile（新机器只需一次）
 #   scripts/dev.sh install                以 --link 方式把本仓库装入 dev 实例（开发循环）
-#   scripts/dev.sh reload                 重载插件（2026.9.3 无 plugins reload，等价于 restart）
+#   scripts/dev.sh reload                 等价于 restart，确保 --link 的 ESM helper 重新加载
 #   scripts/dev.sh restart                重启 dev Gateway（reload 不生效时用）
 #   scripts/dev.sh inspect                查看插件运行时注册情况（--runtime --json）
 #   scripts/dev.sh start|stop|status      按需启停 dev Gateway（默认不运行，测试时才启动）
@@ -130,7 +130,7 @@ case "$cmd" in
   setup)       cmd_setup "$@" ;;
   install)     cmd_install "$@" ;;
   pack-verify) cmd_pack_verify "$@" ;;
-  reload)      oc gateway restart "$@" ;;  # 本版本无 plugins reload；--link 代码改动需进程级重启（ESM 模块缓存）
+  reload)      oc gateway restart "$@" ;;  # --link 代码改动使用进程级重启，确保清除 ESM 模块缓存
   restart)     oc gateway restart "$@" ;;
   inspect)     oc plugins inspect "$PLUGIN_ID" --runtime --json "$@" ;;
   start)       oc gateway start "$@" ;;
